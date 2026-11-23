@@ -15,6 +15,7 @@ import { go, startRouter, type Route } from './router';
 import { say, type Cleanup, type ScreenDeps } from './ui/dom';
 import * as color from './ui/color';
 import * as colorPick from './ui/colorPick';
+import * as gallery from './ui/gallery';
 import * as home from './ui/home';
 import * as setup from './ui/setup';
 
@@ -34,8 +35,8 @@ const SCREENS: Record<Route['name'], Screen> = {
   color: (root, route, deps) => color.render(root, route, deps),
   tracePick: toHome,
   trace: toHome,
-  gallery: toHome,
-  galleryView: toHome,
+  gallery: gallery.render,
+  galleryView: gallery.render,
 };
 
 function boot(root: HTMLElement): void {

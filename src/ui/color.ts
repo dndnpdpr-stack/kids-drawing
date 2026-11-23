@@ -39,6 +39,8 @@ export function render(root: HTMLElement, route: Route, deps: ScreenDeps, opts: 
   let color = PALETTE[0].hex;
   let mode: Mode = 'fill';
   let finished = false;
+  /** 화면을 떠나면 false. 늦게 끝난 비동기 일이 화면을 건드리지 않게 한다. */
+  let alive = true;
   let saveTimer: ReturnType<typeof setTimeout> | null = null;
   let stopCelebrate: (() => void) | null = null;
 
@@ -151,6 +153,8 @@ export function render(root: HTMLElement, route: Route, deps: ScreenDeps, opts: 
   let active: number | null = null;
   let brushRegion: string | null = null;
   let points: Pt[] = [];
+  /** 채우기: 손가락을 댄 곳 (뗀 곳이 아니라). 손가락이 미끄러져도 옆 칸이 칠해지지 않게. */
+  let downPt: Pt | null = null;
 
   function toPic(e: PointerEvent): Pt {
     const r = stage.getBoundingClientRect();
@@ -167,8 +171,11 @@ export function render(root: HTMLElement, route: Route, deps: ScreenDeps, opts: 
     } catch {
       /* ignore */
     }
-    if (mode !== 'brush') return;
     const p = toPic(e);
+    if (mode !== 'brush') {
+      downPt = p;
+      return;
+    }
     brushRegion = hit(p);
     points = [p];
     if (brushRegion && ctx) drawBrushSegment(ctx, picture, viewOf(state), brushRegion, color, p, p, side);
@@ -186,7 +193,8 @@ export function render(root: HTMLElement, route: Route, deps: ScreenDeps, opts: 
     if (e.pointerId !== active) return;
     active = null;
     if (mode === 'fill') {
-      const p = toPic(e);
+      const p = downPt ?? toPic(e);
+      downPt = null;
       const region = hit(p);
       if (region) {
         commit(fill(state, region, color));
@@ -204,6 +212,7 @@ export function render(root: HTMLElement, route: Route, deps: ScreenDeps, opts: 
     if (e.pointerId !== active) return;
     active = null;
     brushRegion = null;
+    downPt = null;
     points = [];
     redraw(); // 그리던 자국 지우기
   };
@@ -215,17 +224,35 @@ export function render(root: HTMLElement, route: Route, deps: ScreenDeps, opts: 
   window.addEventListener('resize', resize);
 
   // ---------- 완성 ----------
+  /**
+   * ✅: 그림첩에 넣는다. 진행 상태는 그림첩 저장이 확인된 뒤에만 지운다 (완성한 그림을 잃지 않게).
+   * 저장을 못 하면 칭찬만 하고 그림은 그대로 둔다. 도중에 화면을 떠나도 저장은 끝까지 하되
+   * 화면 이동·축하는 하지 않는다.
+   */
   async function finish() {
     if (finished || !canUndo(state)) return;
     finished = true;
     if (saveTimer !== null) clearTimeout(saveTimer);
     saveTimer = null;
-    const image = await exportPng(picture!, state);
-    const item = await deps.db.addGallery(picture!.id, image);
-    await deps.db.clearProgress(picture!.id);
-    stopCelebrate = celebrate(screen, { big: true, mascot: picture!.emoji });
-    void say(deps, `우와, 멋진 ${picture!.name}!`);
-    t.after(CELEBRATE_BIG_MS, () => go({ name: 'galleryView', id: item.id }));
+    const snapshot = state;
+    try {
+      await deps.db.saveProgress(snapshot);
+      const image = await exportPng(picture!, snapshot);
+      const item = image.size > 0 ? await deps.db.addGallery(picture!.id, image) : null;
+      if (item) await deps.db.clearProgress(picture!.id);
+      if (!alive) return;
+      stopCelebrate = celebrate(screen, { big: true, mascot: picture!.emoji });
+      void say(deps, `우와, 멋진 ${picture!.name}!`);
+      if (item) {
+        t.after(CELEBRATE_BIG_MS, () => {
+          if (alive) go({ name: 'galleryView', id: item.id }, { replace: true });
+        });
+      } else {
+        finished = false; // 저장 못 함: 그림은 그대로, 계속 칠할 수 있다
+      }
+    } catch {
+      finished = false;
+    }
   }
 
   // ---------- 시작 ----------
@@ -243,6 +270,7 @@ export function render(root: HTMLElement, route: Route, deps: ScreenDeps, opts: 
   });
 
   return () => {
+    alive = false;
     saveNow();
     t.clear();
     stopCelebrate?.();

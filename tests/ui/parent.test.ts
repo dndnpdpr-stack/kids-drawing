@@ -48,7 +48,7 @@ describe('parent menu', () => {
   });
 
   it('deletes a gallery picture only on the second tap', async () => {
-    const a = await db.addGallery('apple', png());
+    const a = (await db.addGallery('apple', png()))!;
     await db.addGallery('fish', png());
     cleanup = render(root, { name: 'parent' }, makeDeps({ db }));
     await vi.waitFor(() => expect(q(`delete-${a.id}`)).not.toBeNull());
@@ -60,7 +60,7 @@ describe('parent menu', () => {
   });
 
   it('a delete confirmation expires after 3 seconds', async () => {
-    const a = await db.addGallery('apple', png());
+    const a = (await db.addGallery('apple', png()))!;
     cleanup = render(root, { name: 'parent' }, makeDeps({ db }));
     await vi.waitFor(() => expect(q(`delete-${a.id}`)).not.toBeNull());
     vi.useFakeTimers();

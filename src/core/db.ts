@@ -12,7 +12,8 @@ export interface DrawDb {
   saveProgress(s: ColoringState): Promise<void>;
   clearProgress(pictureId: string): Promise<void>;
   allProgress(): Promise<ColoringState[]>;
-  addGallery(pictureId: string, image: Blob): Promise<GalleryItem>;
+  /** 저장에 실패하면 null (저장소 없음, 용량 부족 등) */
+  addGallery(pictureId: string, image: Blob): Promise<GalleryItem | null>;
   /** 최신 먼저 */
   listGallery(): Promise<GalleryItem[]>;
   getGallery(id: string): Promise<GalleryItem | null>;
@@ -82,7 +83,7 @@ function emptyDb(): DrawDb {
     saveProgress: async () => {},
     clearProgress: async () => {},
     allProgress: async () => [],
-    addGallery: async (pictureId, image) => ({ id: newId(), pictureId, createdAt: Date.now(), image }),
+    addGallery: async () => null,
     listGallery: async () => [],
     getGallery: async () => null,
     deleteGallery: async () => {},
@@ -180,14 +181,14 @@ export async function openDrawDb(
       }, []),
     addGallery: async (pictureId, image) => {
       const item: GalleryItem = { id: newId(), pictureId, createdAt: Date.now(), image };
-      await safe(async () => {
+      return safe(async () => {
         const rec: GalleryRecord = { ...item, type: image.type, bytes: await image.arrayBuffer() };
         delete (rec as Partial<GalleryItem>).image;
         const { tx, s } = store(GALLERY, 'readwrite');
         s.put(rec);
         await done(tx);
-      }, undefined);
-      return item;
+        return item;
+      }, null);
     },
     listGallery: () =>
       safe(async () => {

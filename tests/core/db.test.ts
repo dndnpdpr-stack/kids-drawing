@@ -60,16 +60,16 @@ describe('gallery', () => {
   it('lists newest first', async () => {
     const now = vi.spyOn(Date, 'now');
     now.mockReturnValue(1000);
-    const a = await db.addGallery('apple', png('a'));
+    const a = (await db.addGallery('apple', png('a')))!;
     now.mockReturnValue(3000);
-    const c = await db.addGallery('fish', png('c'));
+    const c = (await db.addGallery('fish', png('c')))!;
     now.mockReturnValue(2000);
-    const b = await db.addGallery('heart', png('b'));
+    const b = (await db.addGallery('heart', png('b')))!;
     expect((await db.listGallery()).map((g) => g.id)).toEqual([c.id, b.id, a.id]);
   });
 
   it('keeps the image bytes and type', async () => {
-    const item = await db.addGallery('apple', png('hello'));
+    const item = (await db.addGallery('apple', png('hello')))!;
     const got = await db.getGallery(item.id);
     expect(got?.pictureId).toBe('apple');
     expect(got?.image.type).toBe('image/png');
@@ -81,8 +81,8 @@ describe('gallery', () => {
   });
 
   it('deleteGallery removes one', async () => {
-    const a = await db.addGallery('apple', png());
-    const b = await db.addGallery('fish', png());
+    const a = (await db.addGallery('apple', png()))!;
+    const b = (await db.addGallery('fish', png()))!;
     await db.deleteGallery(a.id);
     expect((await db.listGallery()).map((g) => g.id)).toEqual([b.id]);
   });
@@ -104,7 +104,7 @@ describe('unavailable', () => {
     expect(await none.listGallery()).toEqual([]);
     expect(await none.loadProgress('apple')).toBeNull();
     await expect(none.saveProgress(newColoring('apple'))).resolves.toBeUndefined();
-    await expect(none.addGallery('apple', png())).resolves.toMatchObject({ pictureId: 'apple' });
+    await expect(none.addGallery('apple', png())).resolves.toBeNull();
   });
 
   it('a factory whose open throws also resolves to empty', async () => {

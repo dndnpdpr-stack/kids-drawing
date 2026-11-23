@@ -203,6 +203,59 @@ describe('color screen', () => {
   });
 });
 
+describe('finishing safely', () => {
+  it('fill uses the region where the finger went down', async () => {
+    open();
+    ptr(stage(), 'pointerdown', { x: 20, y: 20 });
+    ptr(stage(), 'pointerup', { x: 80, y: 20 });
+    flushSave();
+    await vi.waitFor(async () => expect((await saved())?.ops).toEqual([{ kind: 'fill', region: 'body', color: RED }]));
+  });
+
+  it('done replaces history so back does not reopen a blank copy', async () => {
+    open();
+    tap(20, 20);
+    const before = history.length;
+    q('done').click();
+    await vi.waitFor(() => expect(location.hash).toMatch(/^#\/gallery\//), { timeout: 4000 });
+    expect(history.length).toBe(before);
+  });
+
+  it('leaving during done still saves but does not pull the child to the gallery later', async () => {
+    open();
+    tap(20, 20);
+    q('done').click();
+    flushSave();
+    location.hash = '#/trace';
+    await vi.waitFor(async () => expect(await db.listGallery()).toHaveLength(1));
+    await new Promise((r) => setTimeout(r, 2600));
+    expect(location.hash).toBe('#/trace');
+  });
+
+  it('a failed gallery write keeps the progress and stays on the picture', async () => {
+    const failing: DrawDb = { ...db, addGallery: async () => null };
+    cleanup = render(root, { name: 'color', picture: 'apple' }, makeDeps({ db: failing }), { hitTest });
+    tap(20, 20);
+    q('done').click();
+    await new Promise((r) => setTimeout(r, 2600));
+    expect(location.hash).toBe('#/color/apple');
+    expect((await saved())?.ops).toHaveLength(1);
+    // 다시 칠할 수 있다
+    tap(80, 20);
+    expect(q('undo').hasAttribute('disabled')).toBe(false);
+  });
+
+  it('an empty image is not saved and progress is kept', async () => {
+    vi.mocked(paint.exportPng).mockResolvedValueOnce(new Blob([], { type: 'image/png' }));
+    open();
+    tap(20, 20);
+    q('done').click();
+    await new Promise((r) => setTimeout(r, 300));
+    expect(await db.listGallery()).toEqual([]);
+    expect((await saved())?.ops).toHaveLength(1);
+  });
+});
+
 describe('color picker', () => {
   it('lists all twelve pictures and opens one', () => {
     cleanup = renderPick(root, { name: 'colorPick' }, makeDeps({ db }));

@@ -34,7 +34,7 @@ describe('gallery grid', () => {
     now.mockReturnValue(1);
     await db.addGallery('apple', png());
     now.mockReturnValue(3);
-    const newest = await db.addGallery('fish', png());
+    const newest = (await db.addGallery('fish', png()))!;
     now.mockReturnValue(2);
     await db.addGallery('cat', png());
     cleanup = render(root, { name: 'gallery' }, makeDeps({ db }));
@@ -75,7 +75,7 @@ describe('gallery view', () => {
   });
 
   it('color-again opens the same picture fresh', async () => {
-    const item = await db.addGallery('fish', png());
+    const item = (await db.addGallery('fish', png()))!;
     location.hash = `#/gallery/${item.id}`;
     cleanup = render(root, { name: 'galleryView', id: item.id }, makeDeps({ db }));
     await vi.waitFor(() => expect(root.querySelector('[data-testid=color-again]')).not.toBeNull());
@@ -84,7 +84,7 @@ describe('gallery view', () => {
   });
 
   it('shows the big image', async () => {
-    const item = await db.addGallery('fish', png());
+    const item = (await db.addGallery('fish', png()))!;
     cleanup = render(root, { name: 'galleryView', id: item.id }, makeDeps({ db }));
     await vi.waitFor(() => expect(root.querySelector('img.gallery-big')?.getAttribute('src')).toBe('blob:fake'));
   });

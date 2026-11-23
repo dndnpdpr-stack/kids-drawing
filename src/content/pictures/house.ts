@@ -1,4 +1,4 @@
-import { BG, outlines, type Picture, type Region } from './types';
+import { BG, type Picture, type Region } from './types';
 
 /** 왼쪽 아래에서 시작해 벽 → 지붕 → 벽 → 바닥 */
 export const OUTLINE: [number, number][] = [
@@ -21,5 +21,5 @@ export const house: Picture = {
   emoji: '🏠',
   level: 1,
   regions,
-  lines: outlines(regions, 'M36.5 58L36.5 72', 'M29 65L44 65'),
+  lines: ['M36.5 58L36.5 72', 'M29 65L44 65'],
 };

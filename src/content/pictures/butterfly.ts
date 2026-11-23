@@ -1,4 +1,4 @@
-import { BG, circle, ellipse, outlines, type Picture, type Region } from './types';
+import { BG, circle, ellipse, type Picture, type Region } from './types';
 
 const regions: Region[] = [
   BG,
@@ -20,5 +20,5 @@ export const butterfly: Picture = {
   emoji: '🦋',
   level: 3,
   regions,
-  lines: outlines(regions, 'M48 24Q42 13 38 10', 'M52 24Q58 13 62 10'),
+  lines: ['M48 24Q42 13 38 10', 'M52 24Q58 13 62 10'],
 };

@@ -5,3 +5,4 @@ ios/
 *.log
 .DS_Store
 .superpowers/
+__*.html

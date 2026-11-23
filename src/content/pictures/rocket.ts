@@ -1,4 +1,4 @@
-import { BG, circle, outlines, type Picture, type Region } from './types';
+import { BG, circle, type Picture, type Region } from './types';
 
 const regions: Region[] = [
   BG,
@@ -20,5 +20,5 @@ export const rocket: Picture = {
   emoji: '🚀',
   level: 3,
   regions,
-  lines: outlines(regions, 'M12 20L16 20M14 18L14 22', 'M66 88L70 88M68 86L68 90', 'M28 40L32 40M30 38L30 42'),
+  lines: ['M12 20L16 20M14 18L14 22', 'M66 88L70 88M68 86L68 90', 'M28 40L32 40M30 38L30 42'],
 };

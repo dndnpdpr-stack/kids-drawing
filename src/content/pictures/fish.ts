@@ -1,4 +1,4 @@
-import { BG, circle, ellipse, outlines, type Picture, type Region } from './types';
+import { BG, circle, ellipse, type Picture, type Region } from './types';
 
 /** 코에서 시작해 위쪽 → 꼬리 → 아래쪽 */
 export const OUTLINE: [number, number][] = [
@@ -21,5 +21,5 @@ export const fish: Picture = {
   emoji: '🐟',
   level: 1,
   regions,
-  lines: outlines(regions, 'M18 56Q22 60 26 58', circle(80, 18, 3), circle(86, 10, 2)),
+  lines: ['M18 56Q22 60 26 58', circle(80, 18, 3), circle(86, 10, 2)],
 };

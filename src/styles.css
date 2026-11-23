@@ -317,6 +317,7 @@ button,
   background: #fff3b0;
   border: 2px dashed #e0a800;
   font-size: max(1rem, 3.2vmin);
+}
 
 /* ---------- 그림 놀이: 홈 ---------- */
 .topbar-gap { flex: 1; }
@@ -351,3 +352,121 @@ button,
 }
 .mode-gallery .mode-emoji { font-size: max(2rem, 8vmin); }
 .mode-gallery .mode-label { font-size: max(1.4rem, 5vmin); }
+
+/* ---------- 색칠 그림 고르기 ---------- */
+.screen-title { font-size: max(2rem, 7vmin); }
+.pick-grid {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(max(120px, 22vmin), 1fr));
+  gap: max(10px, 2.5vmin);
+  align-content: start;
+  padding: 1vmin;
+}
+.pick-card {
+  aspect-ratio: 1;
+  padding: max(6px, 1.2vmin);
+  background: var(--card);
+  border-radius: var(--radius);
+}
+.pick-card .thumb { width: 100%; height: 100%; border-radius: calc(var(--radius) * 0.6); display: block; }
+
+/* ---------- 색칠 화면 ---------- */
+.undo-btn { background: var(--lilac); }
+.undo-btn[disabled] { opacity: 0.4; }
+.done-btn { background: var(--numbers); }
+.done-btn.ready { animation: ready-glow 1.2s ease-in-out infinite; }
+@keyframes ready-glow {
+  0%, 100% { transform: scale(1); box-shadow: var(--shadow); }
+  50% { transform: scale(1.12); box-shadow: 0 0 0 1.4vmin rgba(255, 202, 58, 0.55), var(--shadow); }
+}
+.color-body {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  gap: max(10px, 2vmin);
+}
+.color-area {
+  flex: 1;
+  min-height: 0;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.color-stage {
+  position: relative;
+  background: #fff;
+  border-radius: calc(var(--radius) * 0.6);
+  box-shadow: var(--shadow);
+  overflow: hidden;
+  touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
+}
+.color-canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+.tap-ripple {
+  position: absolute;
+  width: 18%;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  border: 1vmin solid var(--c);
+  transform: translate(-50%, -50%) scale(0.2);
+  opacity: 0.9;
+  pointer-events: none;
+  animation: tap-ripple 0.45s ease-out forwards;
+}
+@keyframes tap-ripple { to { transform: translate(-50%, -50%) scale(1); opacity: 0; } }
+.palette {
+  flex: none;
+  display: flex;
+  align-items: center;
+  gap: max(8px, 2vmin);
+}
+.swatches {
+  flex: 1;
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: max(6px, 1.5vmin);
+  justify-items: center;
+}
+.swatch {
+  width: max(var(--touch), 11vmin);
+  height: max(var(--touch), 11vmin);
+  min-width: 0;
+  padding: 0;
+  border-radius: 50%;
+  background: var(--swatch);
+  border: 0.6vmin solid #fff;
+  transition: transform 0.12s;
+}
+.swatch.selected { transform: scale(1.18); border-color: var(--ink); }
+.mode-btn {
+  flex: none;
+  width: max(var(--touch), 14vmin);
+  height: max(var(--touch), 14vmin);
+  padding: 0;
+  font-size: max(1.8rem, 7vmin);
+  border-radius: 50%;
+  background: var(--accent);
+}
+.mode-btn.brush { background: var(--abc); }
+@media (orientation: landscape) {
+  .color-body { flex-direction: row; }
+  /* 가로 화면: 색과 붓 버튼을 오른쪽에 3줄 격자로 (높이가 낮아도 다 보이게) */
+  .palette {
+    display: grid;
+    grid-template-columns: repeat(3, auto);
+    align-content: center;
+    gap: max(8px, 1.6vmin);
+  }
+  .swatches { display: contents; }
+  .swatch, .mode-btn {
+    width: max(var(--touch), min(11vmin, calc((100dvh - 150px) / 4)));
+    height: max(var(--touch), min(11vmin, calc((100dvh - 150px) / 4)));
+  }
+  .mode-btn { font-size: max(1.6rem, 5vmin); }
+}

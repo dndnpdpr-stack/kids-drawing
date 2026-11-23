@@ -1,4 +1,4 @@
-import { BG, outlines, type Picture, type Region } from './types';
+import { BG, type Picture, type Region } from './types';
 
 /** 따라 그리기용 바깥 윤곽 (꼭지 아래 가운데에서 시작해 왼쪽으로) */
 export const OUTLINE: [number, number][] = [
@@ -14,4 +14,4 @@ const regions: Region[] = [
   { id: 'shine', d: 'M23 48C22 37 31 30 40 32C34 38 32 46 31 55C27 56 23 53 23 48Z' },
 ];
 
-export const apple: Picture = { id: 'apple', name: '사과', emoji: '🍎', level: 1, regions, lines: outlines(regions) };
+export const apple: Picture = { id: 'apple', name: '사과', emoji: '🍎', level: 1, regions, lines: [] };

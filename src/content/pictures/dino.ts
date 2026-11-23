@@ -1,4 +1,4 @@
-import { BG, circle, ellipse, outlines, type Picture, type Region } from './types';
+import { BG, circle, ellipse, type Picture, type Region } from './types';
 
 const regions: Region[] = [
   BG,
@@ -21,5 +21,5 @@ export const dino: Picture = {
   emoji: '🦖',
   level: 3,
   regions,
-  lines: outlines(regions, circle(84, 21, 1.8), 'M80 29Q86 31 90 27'),
+  lines: [circle(84, 21, 1.8), 'M80 29Q86 31 90 27'],
 };

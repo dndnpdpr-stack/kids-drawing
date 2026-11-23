@@ -1,4 +1,4 @@
-import { BG, circle, outlines, type Picture, type Region } from './types';
+import { BG, circle, type Picture, type Region } from './types';
 
 const regions: Region[] = [
   BG,
@@ -17,5 +17,5 @@ export const car: Picture = {
   emoji: '🚗',
   level: 2,
   regions,
-  lines: outlines(regions, circle(28, 72, 3.5), circle(74, 72, 3.5), 'M10 90L22 90', 'M44 90L56 90', 'M78 90L90 90'),
+  lines: [circle(28, 72, 3.5), circle(74, 72, 3.5), 'M10 90L22 90', 'M44 90L56 90', 'M78 90L90 90'],
 };

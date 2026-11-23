@@ -2,7 +2,7 @@ import 'fake-indexeddb/auto';
 import { IDBFactory } from 'fake-indexeddb';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { addBrush, fill, newColoring } from '../../src/core/coloring';
-import { openDrawDb, type DrawDb } from '../../src/core/db';
+import { lazyDrawDb, openDrawDb, type DrawDb } from '../../src/core/db';
 
 let factory: IDBFactory;
 let db: DrawDb;
@@ -111,5 +111,28 @@ describe('unavailable', () => {
     const broken = { open: () => { throw new Error('denied'); } } as unknown as IDBFactory;
     const none = await openDrawDb(broken);
     expect(await none.allProgress()).toEqual([]);
+  });
+});
+
+describe('slow or stuck open', () => {
+  /** open 요청이 끝나지 않는 factory */
+  const stuck = { open: () => ({}) } as unknown as IDBFactory;
+
+  it('falls back to an empty db after the timeout', async () => {
+    vi.useFakeTimers();
+    try {
+      const p = openDrawDb(stuck, 50);
+      await vi.advanceTimersByTimeAsync(60);
+      const none = await p;
+      expect(await none.listGallery()).toEqual([]);
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it('lazyDrawDb answers calls once the db opens', async () => {
+    const lazy = lazyDrawDb(openDrawDb(factory));
+    await lazy.saveProgress(fill(newColoring('apple'), 'body', '#ff595e'));
+    expect((await lazy.loadProgress('apple'))?.ops).toHaveLength(1);
   });
 });

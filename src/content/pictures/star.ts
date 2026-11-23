@@ -1,4 +1,4 @@
-import { outlines, poly, type Picture, type Region } from './types';
+import { poly, type Picture, type Region } from './types';
 
 type P = [number, number];
 const O: P[] = [[50, 9], [91.8, 39.4], [75.9, 88.6], [24.1, 88.6], [8.2, 39.4]];
@@ -12,4 +12,4 @@ const regions: Region[] = [
   { id: 'center', d: poly(I) },
 ];
 
-export const star: Picture = { id: 'star', name: '별', emoji: '⭐', level: 1, regions, lines: outlines(regions) };
+export const star: Picture = { id: 'star', name: '별', emoji: '⭐', level: 1, regions, lines: [] };

@@ -5,7 +5,7 @@ import '@fontsource/noto-sans-kr/700.css';
 import './styles.css';
 import { Capacitor } from '@capacitor/core';
 import { speak, stopSpeaking } from './core/audio';
-import { openDrawDb } from './core/db';
+import { lazyDrawDb, openDrawDb } from './core/db';
 import { isTestMode } from './core/devFlags';
 import { useNativeTtsInApp } from './core/nativeTts';
 import { setupOffline } from './core/offline';
@@ -13,6 +13,8 @@ import { loadChildName, saveChildName } from './core/profile';
 import { loadSettings, saveSettings } from './core/settings';
 import { go, startRouter, type Route } from './router';
 import { say, type Cleanup, type ScreenDeps } from './ui/dom';
+import * as color from './ui/color';
+import * as colorPick from './ui/colorPick';
 import * as home from './ui/home';
 import * as setup from './ui/setup';
 
@@ -28,15 +30,15 @@ const SCREENS: Record<Route['name'], Screen> = {
   home: home.render,
   setup: setup.render,
   parent: toHome,
-  colorPick: toHome,
-  color: toHome,
+  colorPick: colorPick.render,
+  color: (root, route, deps) => color.render(root, route, deps),
   tracePick: toHome,
   trace: toHome,
   gallery: toHome,
   galleryView: toHome,
 };
 
-async function boot(root: HTMLElement): Promise<void> {
+function boot(root: HTMLElement): void {
   useNativeTtsInApp();
   void setupOffline({
     isNative: Capacitor.isNativePlatform(),
@@ -44,7 +46,8 @@ async function boot(root: HTMLElement): Promise<void> {
     caches: 'caches' in window ? window.caches : undefined,
     reload: () => location.reload(),
   }).catch(() => {});
-  const db = await openDrawDb();
+  // 저장소가 늦게 열려도 화면은 바로 뜬다.
+  const db = lazyDrawDb(openDrawDb());
   const deps: ScreenDeps = {
     settings: loadSettings(),
     saveSettings: (s) => {
@@ -76,4 +79,4 @@ async function boot(root: HTMLElement): Promise<void> {
 }
 
 const root = document.getElementById('app');
-if (root) void boot(root);
+if (root) boot(root);

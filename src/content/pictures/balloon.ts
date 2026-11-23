@@ -1,4 +1,4 @@
-import { BG, outlines, type Picture, type Region } from './types';
+import { BG, type Picture, type Region } from './types';
 
 export const OUTLINE: [number, number][] = [
   [50, 10], [32, 14], [20, 28], [18, 46], [26, 62], [38, 73], [50, 78],
@@ -19,5 +19,5 @@ export const balloon: Picture = {
   emoji: '🎈',
   level: 1,
   regions,
-  lines: outlines(regions, 'M50 85C45 89 55 92 50 96'),
+  lines: ['M50 85C45 89 55 92 50 96'],
 };

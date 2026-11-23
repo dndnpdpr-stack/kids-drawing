@@ -14,16 +14,14 @@ export interface Picture {
   emoji: string;
   level: 1 | 2 | 3;
   regions: Region[];
-  /** 윤곽선 path들 (굵기 2.2, 둥근 끝) */
+  /**
+   * 덧그림 선 (수염, 바퀴 축 등). 칸에 속하지 않고 맨 위에 그린다.
+   * 칸의 테두리는 따로 적지 않는다: 칸마다 자기 차례에 테두리를 그려서 위 칸이 가린다.
+   */
   lines: string[];
 }
 
 export const BG: Region = { id: 'bg', d: 'M0 0H100V100H0Z' };
-
-/** 윤곽선 = 배경을 뺀 모든 칸의 테두리 + 덧그림 */
-export function outlines(regions: Region[], ...extra: string[]): string[] {
-  return [...regions.filter((r) => r.id !== 'bg').map((r) => r.d), ...extra];
-}
 
 /** 동그라미 path (두 반원 호) */
 export function circle(cx: number, cy: number, r: number): string {

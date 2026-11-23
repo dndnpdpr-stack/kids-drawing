@@ -1,4 +1,4 @@
-import { BG, circle, outlines, type Picture, type Region } from './types';
+import { BG, circle, type Picture, type Region } from './types';
 
 const PETALS: [number, number][] = [[50, 22], [65.2, 33.1], [59.4, 50.9], [40.6, 50.9], [34.8, 33.1]];
 
@@ -11,4 +11,4 @@ const regions: Region[] = [
   { id: 'center', d: circle(50, 38, 10) },
 ];
 
-export const flower: Picture = { id: 'flower', name: '꽃', emoji: '🌸', level: 2, regions, lines: outlines(regions) };
+export const flower: Picture = { id: 'flower', name: '꽃', emoji: '🌸', level: 2, regions, lines: [] };

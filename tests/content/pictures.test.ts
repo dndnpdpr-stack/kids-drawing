@@ -54,7 +54,6 @@ describe('pictures', () => {
         expect(p.regions.length).toBeGreaterThanOrEqual(lo);
         expect(p.regions.length).toBeLessThanOrEqual(hi);
       });
-      it('has outline lines', () => expect(p.lines.length).toBeGreaterThan(0));
     });
   }
 });

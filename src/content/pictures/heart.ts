@@ -1,4 +1,4 @@
-import { BG, circle, outlines, type Picture, type Region } from './types';
+import { BG, circle, type Picture, type Region } from './types';
 
 export const OUTLINE: [number, number][] = [
   [50, 30], [40, 18], [26, 16], [14, 26], [13, 40], [20, 56], [34, 72], [50, 88],
@@ -12,4 +12,4 @@ const regions: Region[] = [
   { id: 'shine', d: circle(37, 42, 6) },
 ];
 
-export const heart: Picture = { id: 'heart', name: '하트', emoji: '❤️', level: 1, regions, lines: outlines(regions) };
+export const heart: Picture = { id: 'heart', name: '하트', emoji: '❤️', level: 1, regions, lines: [] };

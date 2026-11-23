@@ -17,6 +17,17 @@ describe('pictures', () => {
     }
   });
 
+  it('has twelve pictures with the planned levels', () => {
+    expect(PICTURES).toHaveLength(12);
+    for (const id of ['flower', 'car', 'cat']) expect(getPicture(id)?.level, id).toBe(2);
+    for (const id of ['butterfly', 'dino', 'rocket']) expect(getPicture(id)?.level, id).toBe(3);
+  });
+
+  it('is sorted easiest first', () => {
+    const levels = PICTURES.map((p) => p.level);
+    expect(levels).toEqual([...levels].sort());
+  });
+
   it('getPicture returns undefined for unknown ids', () => {
     expect(getPicture('nope')).toBeUndefined();
   });

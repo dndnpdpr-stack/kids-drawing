@@ -21,26 +21,30 @@ const chunk = (type, data) => {
   return Buffer.concat([len, body, crc]);
 };
 
-// Full-bleed pastel background (safe for maskable), centered smiling sun-ish circle.
+// Full-bleed pink background (safe for maskable), centered paint palette with four color dots.
 function render(size) {
   const raw = Buffer.alloc((size * 4 + 1) * size);
   const c = size / 2;
+  const dots = [
+    [-0.13, -0.1, [255, 89, 94]],
+    [0.03, -0.17, [255, 202, 58]],
+    [0.16, -0.06, [138, 201, 38]],
+    [0.12, 0.11, [25, 130, 196]],
+  ];
   for (let y = 0; y < size; y++) {
     raw[y * (size * 4 + 1)] = 0;
     for (let x = 0; x < size; x++) {
       const t = (x + y) / (2 * size);
-      let rgb = [Math.round(255 + (232 - 255) * t), 246, Math.round(233 + (255 - 233) * t)];
+      let rgb = [255, Math.round(200 + 30 * t), Math.round(221 + 20 * t)];
       const dx = x - c, dy = y - c;
-      const d = Math.hypot(dx, dy);
-      if (d < size * 0.3) {
-        rgb = [255, 200, 87];
-        // eyes
-        for (const ex of [-0.1, 0.1]) {
-          if (Math.hypot(dx - ex * size, dy + 0.06 * size) < size * 0.03) rgb = [90, 60, 40];
+      // 팔레트: 둥근 판 + 엄지 구멍
+      const inPalette = Math.hypot(dx / 1.08, dy) < size * 0.33;
+      const inHole = Math.hypot(dx + 0.13 * size, dy - 0.13 * size) < size * 0.065;
+      if (inPalette && !inHole) {
+        rgb = [255, 244, 222];
+        for (const [ox, oy, col] of dots) {
+          if (Math.hypot(dx - ox * size, dy - oy * size) < size * 0.065) rgb = col;
         }
-        // smile arc
-        const sd = Math.hypot(dx, dy + 0.02 * size);
-        if (dy > 0.04 * size && Math.abs(sd - size * 0.15) < size * 0.018) rgb = [90, 60, 40];
       }
       const o = y * (size * 4 + 1) + 1 + x * 4;
       raw[o] = rgb[0]; raw[o + 1] = rgb[1]; raw[o + 2] = rgb[2]; raw[o + 3] = 255;

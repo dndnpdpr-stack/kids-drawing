@@ -5,6 +5,7 @@ import '@fontsource/noto-sans-kr/700.css';
 import './styles.css';
 import { Capacitor } from '@capacitor/core';
 import { speak, stopSpeaking } from './core/audio';
+import { installBackButton } from './core/backButton';
 import { lazyDrawDb, openDrawDb } from './core/db';
 import { isTestMode } from './core/devFlags';
 import { useNativeTtsInApp } from './core/nativeTts';
@@ -63,12 +64,15 @@ function boot(root: HTMLElement): void {
     db,
   };
   let cleanup: Cleanup = () => {};
+  let current: Route = { name: 'home' };
+  installBackButton(() => current);
   startRouter((route) => {
     cleanup();
     stopSpeaking();
     root.replaceChildren();
     // 이름이 없으면(첫 실행) 어떤 주소로 들어와도 이름 입력 화면을 먼저 보여 준다.
     const r: Route = deps.childName ? route : { name: 'setup' };
+    current = r;
     cleanup = SCREENS[r.name](root, r, deps);
     const text = deps.announce;
     deps.announce = null;

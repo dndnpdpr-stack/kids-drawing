@@ -18,6 +18,8 @@ import * as colorPick from './ui/colorPick';
 import * as gallery from './ui/gallery';
 import * as home from './ui/home';
 import * as setup from './ui/setup';
+import * as trace from './ui/trace';
+import * as tracePick from './ui/tracePick';
 
 type Screen = (root: HTMLElement, route: Route, deps: ScreenDeps) => Cleanup;
 
@@ -33,8 +35,8 @@ const SCREENS: Record<Route['name'], Screen> = {
   parent: toHome,
   colorPick: colorPick.render,
   color: (root, route, deps) => color.render(root, route, deps),
-  tracePick: toHome,
-  trace: toHome,
+  tracePick: tracePick.render,
+  trace: trace.render,
   gallery: gallery.render,
   galleryView: gallery.render,
 };

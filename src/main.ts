@@ -5,6 +5,7 @@ import '@fontsource/noto-sans-kr/700.css';
 import './styles.css';
 import { Capacitor } from '@capacitor/core';
 import { speak, stopSpeaking } from './core/audio';
+import { openDrawDb } from './core/db';
 import { isTestMode } from './core/devFlags';
 import { useNativeTtsInApp } from './core/nativeTts';
 import { setupOffline } from './core/offline';
@@ -35,7 +36,7 @@ const SCREENS: Record<Route['name'], Screen> = {
   galleryView: toHome,
 };
 
-function boot(root: HTMLElement): void {
+async function boot(root: HTMLElement): Promise<void> {
   useNativeTtsInApp();
   void setupOffline({
     isNative: Capacitor.isNativePlatform(),
@@ -43,6 +44,7 @@ function boot(root: HTMLElement): void {
     caches: 'caches' in window ? window.caches : undefined,
     reload: () => location.reload(),
   }).catch(() => {});
+  const db = await openDrawDb();
   const deps: ScreenDeps = {
     settings: loadSettings(),
     saveSettings: (s) => {
@@ -57,6 +59,7 @@ function boot(root: HTMLElement): void {
     },
     announce: null,
     testMode: isTestMode(import.meta.env),
+    db,
   };
   let cleanup: Cleanup = () => {};
   startRouter((route) => {
@@ -73,4 +76,4 @@ function boot(root: HTMLElement): void {
 }
 
 const root = document.getElementById('app');
-if (root) boot(root);
+if (root) void boot(root);

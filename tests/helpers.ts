@@ -1,4 +1,5 @@
 import { vi } from 'vitest';
+import type { DrawDb } from '../src/core/db';
 import type { ScreenDeps } from '../src/ui/dom';
 
 /** 포인터 이벤트 흉내 (jsdom에는 PointerEvent가 없다). 좌표는 clientX/Y. */
@@ -24,6 +25,7 @@ export function makeDeps(over: Partial<ScreenDeps> = {}): ScreenDeps {
     saveName: vi.fn(),
     announce: null,
     testMode: false,
+    db: {} as DrawDb,
     ...over,
   } as ScreenDeps;
 }

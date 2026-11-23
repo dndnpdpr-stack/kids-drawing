@@ -1,4 +1,5 @@
 import type { speak } from '../core/audio';
+import type { DrawDb } from '../core/db';
 import type { Settings } from '../core/settings';
 import { go, type Route } from '../router';
 
@@ -14,6 +15,8 @@ export interface ScreenDeps {
   announce: string | null;
   /** 개발용 테스트 모드 (npm run dev:test). 부모 메뉴 한 번 눌러 열기. */
   testMode: boolean;
+  /** 색칠 진행과 그림첩 저장소 */
+  db: DrawDb;
 }
 
 export type Cleanup = () => void;

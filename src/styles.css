@@ -1,0 +1,353 @@
+:root {
+  --font: 'Jua', system-ui, sans-serif;
+  --bg: #fff6e9;
+  --bg-2: #e8f6ff;
+  --ink: #4a4063;
+  --card: #ffffff;
+  --shadow: 0 0.6vmin 0 rgba(74, 64, 99, 0.12), 0 1.2vmin 3vmin rgba(74, 64, 99, 0.12);
+  --radius: 4vmin;
+  --hangul: #ffd6a5;
+  --numbers: #caffbf;
+  --abc: #bde0fe;
+  --accent: #ffb703;
+  --pink: #ffc8dd;
+  --lilac: #e4d7ff;
+  --touch: 64px;
+  /* 숫자 보기 버튼 크기 (찾기 화면 그림 크기 계산에도 쓴다) */
+  --choice: max(90px, 24vmin);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  height: 100%;
+  overflow: hidden;
+  font-family: var(--font);
+  color: var(--ink);
+  background: linear-gradient(160deg, var(--bg) 0%, var(--bg-2) 100%);
+  touch-action: manipulation;
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+#app {
+  height: 100%;
+}
+
+button,
+.btn {
+  font-family: var(--font);
+  color: var(--ink);
+  min-width: var(--touch);
+  min-height: var(--touch);
+  font-size: max(2rem, 6vmin);
+  border-radius: var(--radius);
+  border: none;
+  background: var(--card);
+  box-shadow: var(--shadow);
+  cursor: pointer;
+  transition: transform 0.12s ease;
+}
+
+.btn:active {
+  transform: scale(0.94);
+}
+
+/* ---------- 공통 화면 틀 ---------- */
+.screen {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  padding: max(12px, 2.5vmin);
+  gap: max(12px, 2.5vmin);
+  overflow: hidden;
+}
+
+.topbar {
+  display: flex;
+  align-items: center;
+  gap: max(10px, 2vmin);
+  flex: none;
+}
+
+.icon-btn {
+  width: max(var(--touch), 12vmin);
+  height: max(var(--touch), 12vmin);
+  padding: 0;
+  font-size: max(1.8rem, 6vmin);
+  border-radius: 50%;
+}
+
+.replay-btn {
+  margin-left: auto;
+  background: var(--accent);
+}
+
+/* ---------- 홈 ---------- */
+.home-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.stars-badge {
+  font-size: max(1.8rem, 6vmin);
+  background: var(--card);
+  padding: 1vmin 4vmin;
+  border-radius: 999px;
+  box-shadow: var(--shadow);
+}
+
+.parent-btn {
+  width: var(--touch);
+  height: var(--touch);
+  min-width: var(--touch);
+  font-size: 1.6rem;
+  opacity: 0.6;
+}
+
+.app-title {
+  margin: 0;
+  text-align: center;
+  font-weight: 400;
+  font-size: max(2.4rem, 9vmin);
+  letter-spacing: 0.05em;
+  color: #ff7aa2;
+  text-shadow: 0 0.6vmin 0 #fff;
+}
+
+/* 세계 버튼은 남은 공간(.world-list 크기)에 맞춰 정한다. 화면 비율이 특이해도
+   (폴드 펼친 화면 같은 정사각형에 가까운 세로 화면) 아래 친구 버튼이 밀려나지 않게 한다. */
+.trace-area {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.trace-canvas {
+  background: var(--card);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  touch-action: none;
+}
+
+/* ---------- 부모(임시) ---------- */
+.placeholder {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 30vmin;
+}
+
+/* ---------- 효과 ---------- */
+.shake {
+  animation: shake 0.4s ease;
+}
+
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  20% { transform: translateX(-2vmin); }
+  40% { transform: translateX(2vmin); }
+  60% { transform: translateX(-1.5vmin); }
+  80% { transform: translateX(1.5vmin); }
+}
+
+.pop {
+  animation: pop 0.35s ease;
+}
+
+@keyframes pop {
+  0% { transform: scale(0.6); opacity: 0; }
+  70% { transform: scale(1.08); opacity: 1; }
+  100% { transform: scale(1); }
+}
+
+.celebrate {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10;
+}
+
+.celebrate.big {
+  background: rgba(255, 246, 233, 0.6);
+}
+
+.burst-star {
+  position: absolute;
+  font-size: 8vmin;
+  animation: burst 0.9s ease-out var(--delay, 0ms) both;
+}
+
+.celebrate.big .burst-star {
+  font-size: 11vmin;
+  animation-duration: 1.6s;
+}
+
+@keyframes burst {
+  0% { transform: rotate(var(--angle)) translateY(0) scale(0.3); opacity: 1; }
+  100% { transform: rotate(var(--angle)) translateY(-38vmin) scale(1.2); opacity: 0; }
+}
+
+.celebrate-mascot {
+  font-size: 32vmin;
+  animation: pop 0.5s ease;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+  }
+  .pet-say { animation: none !important; }
+}
+
+/* 부모 버튼: 누르는 3초 동안 테두리가 차오른다 */
+.parent-btn { position: relative; }
+.parent-btn.pressing::after {
+  content: '';
+  position: absolute;
+  inset: -4px;
+  border-radius: 50%;
+  background: conic-gradient(#ff8a00 var(--p, 0%), transparent 0);
+  -webkit-mask: radial-gradient(farthest-side, transparent calc(100% - 6px), #000 calc(100% - 5px));
+  mask: radial-gradient(farthest-side, transparent calc(100% - 6px), #000 calc(100% - 5px));
+  animation: press-fill var(--press-ms, 3000ms) linear forwards;
+  pointer-events: none;
+}
+@property --p { syntax: '<percentage>'; inherits: false; initial-value: 0%; }
+@keyframes press-fill { to { --p: 100%; } }
+
+/* 어른용 화면: 촘촘한 배치로 한 화면에 담는다. 아주 작은 화면에서만 스크롤로 대비한다. */
+.parent-panel {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 12px 16px calc(16px + env(safe-area-inset-bottom));
+  font-size: 1.1rem;
+}
+.parent-panel > * { flex: none; }
+
+/* ---------- 첫 실행: 이름 입력 ---------- */
+.setup { align-items: center; justify-content: center; text-align: center; }
+.setup-mascots { font-size: 14vmin; line-height: 1; }
+.setup-form { display: flex; flex-direction: column; align-items: center; gap: 2.5vmin; width: min(92vw, 560px); }
+.setup-label { font-size: max(1.6rem, 5vmin); }
+.name-input, .parent-name {
+  font-family: var(--font);
+  font-size: max(1.8rem, 6vmin);
+  min-height: var(--touch);
+  width: 100%;
+  box-sizing: border-box;
+  padding: 0 0.6em;
+  text-align: center;
+  border: 3px solid #ffc9d9;
+  border-radius: var(--radius);
+  background: var(--card);
+  color: var(--ink);
+}
+.name-input:focus, .parent-name:focus { outline: none; border-color: #ff7aa2; }
+.name-start { padding: 0 1.2em; background: #ffe08a; }
+.name-start:disabled { opacity: 0.45; }
+.setup-note { margin: 0; font-size: 1rem; opacity: 0.7; }
+
+/* 가로로 눕힌 휴대폰처럼 세로가 낮은 화면: 고정 크기 요소를 줄여 한 화면에 담는다. */
+@media (orientation: landscape) and (max-height: 500px) {
+  .activity-panel { padding: 1vmin; gap: 4vmin; }
+  .activity-btn { width: var(--touch); height: var(--touch); font-size: 2rem; }
+  :root { --choice: max(76px, 22vmin); }
+  .glyph-choice { width: max(84px, 26vmin); height: max(84px, 26vmin); }
+}
+
+/* ---------- 부모 메뉴: 한 화면에 모두 보이도록 촘촘하게 (어른용이라 48px 터치 영역) ---------- */
+.parent-panel .btn { font-size: 1.1rem; min-height: 48px; min-width: 48px; padding: 0 14px; box-shadow: none; }
+.parent-row { display: flex; align-items: center; gap: 10px; }
+.parent-key { flex: none; font-size: 1rem; opacity: 0.75; }
+.parent-name-row .parent-name {
+  flex: 1;
+  min-width: 0;
+  width: auto;
+  min-height: 48px;
+  font-size: 1.2rem;
+  text-align: left;
+  border-width: 2px;
+  border-width: 2px;
+}
+.parent-info {
+  list-style: none;
+  margin: 0;
+  padding: 10px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  background: rgba(255, 255, 255, 0.7);
+  border-radius: var(--radius);
+  font-size: 1rem;
+}
+.parent-stars { margin: 0; flex: none; font-size: 1.2rem; }
+.parent-volume { margin-left: auto; flex: 0 1 min(50vw, 260px); display: flex; align-items: center; gap: 8px; min-width: 0; font-size: 1rem; }
+.volume-slider { flex: 1; min-width: 0; min-height: 48px; }
+.reset-btn { background: #ffe1e8; }
+
+/* ---------- 테스트 모드 ---------- */
+.test-badge {
+  margin-left: auto;
+  margin-right: 2vmin;
+  padding: 0.3em 0.7em;
+  border-radius: 999px;
+  background: #fff3b0;
+  border: 2px dashed #e0a800;
+  font-size: max(1rem, 3.2vmin);
+
+/* ---------- 그림 놀이: 홈 ---------- */
+.topbar-gap { flex: 1; }
+.mode-list {
+  flex: 1;
+  min-height: 0;
+  display: grid;
+  grid-template-columns: 3fr 2fr;
+  gap: max(12px, 3vmin);
+}
+@media (orientation: portrait) {
+  .mode-list { grid-template-columns: 1fr; grid-template-rows: 3fr 2fr; }
+}
+.mode-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1vmin;
+  min-height: 0;
+  border-radius: var(--radius);
+}
+.mode-emoji { font-size: max(3rem, 16vmin); line-height: 1; }
+.mode-label { font-size: max(1.6rem, 6vmin); }
+.mode-color { background: var(--pink); }
+.mode-trace { background: var(--abc); }
+.mode-gallery {
+  flex: none;
+  flex-direction: row;
+  min-height: max(var(--touch), 14vmin);
+  background: var(--numbers);
+}
+.mode-gallery .mode-emoji { font-size: max(2rem, 8vmin); }
+.mode-gallery .mode-label { font-size: max(1.4rem, 5vmin); }

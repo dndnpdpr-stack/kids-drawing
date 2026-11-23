@@ -541,3 +541,22 @@ button,
 }
 .trace-thumb { width: 100%; height: 100%; display: block; }
 .trace-thumb polyline { fill: none; stroke: var(--ink); stroke-width: 0.05; stroke-linecap: round; stroke-linejoin: round; }
+
+/* ---------- 부모 메뉴: 그림첩 관리 ---------- */
+.screen.parent { font-family: 'Noto Sans KR', system-ui, sans-serif; }
+.parent-count { margin: 0; font-size: 1.1rem; }
+.parent-gallery { display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 10px; }
+.parent-gallery-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: 8px;
+  background: rgba(255, 255, 255, 0.75);
+  border-radius: 14px;
+  font-size: 0.95rem;
+}
+.parent-gallery-item img { width: 100%; aspect-ratio: 1; border-radius: 10px; background: #fff; }
+.delete-btn { width: 100%; background: #ffe1e8; font-size: 1rem !important; }
+.delete-btn.armed, .reset-btn.armed { background: #ff8fab; color: #fff; }
+.parent-note { margin: 0; font-size: 0.95rem; opacity: 0.7; }

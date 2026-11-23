@@ -11,28 +11,23 @@ import { useNativeTtsInApp } from './core/nativeTts';
 import { setupOffline } from './core/offline';
 import { loadChildName, saveChildName } from './core/profile';
 import { loadSettings, saveSettings } from './core/settings';
-import { go, startRouter, type Route } from './router';
+import { startRouter, type Route } from './router';
 import { say, type Cleanup, type ScreenDeps } from './ui/dom';
 import * as color from './ui/color';
 import * as colorPick from './ui/colorPick';
 import * as gallery from './ui/gallery';
 import * as home from './ui/home';
+import * as parent from './ui/parent';
 import * as setup from './ui/setup';
 import * as trace from './ui/trace';
 import * as tracePick from './ui/tracePick';
 
 type Screen = (root: HTMLElement, route: Route, deps: ScreenDeps) => Cleanup;
 
-// 아직 만들지 않은 화면은 홈으로 보낸다.
-const toHome: Screen = () => {
-  go({ name: 'home' }, { replace: true });
-  return () => {};
-};
-
 const SCREENS: Record<Route['name'], Screen> = {
   home: home.render,
   setup: setup.render,
-  parent: toHome,
+  parent: parent.render,
   colorPick: colorPick.render,
   color: (root, route, deps) => color.render(root, route, deps),
   tracePick: tracePick.render,

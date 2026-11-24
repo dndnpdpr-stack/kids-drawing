@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { getTraceItem } from '../../src/content/tracing';
-import { render } from '../../src/ui/trace';
+import { render, strokeRole } from '../../src/ui/trace';
 import { render as renderPick } from '../../src/ui/tracePick';
 import { makeDeps, ptr } from '../helpers';
 
@@ -107,5 +107,17 @@ describe('trace picker', () => {
     expect(root.querySelectorAll('[data-testid^=trace-]')).toHaveLength(25);
     q('trace-star')!.click();
     expect(location.hash).toBe('#/trace/star');
+  });
+});
+
+describe('stroke roles', () => {
+  it('marks finished, current and upcoming strokes', () => {
+    const st = { strokeIndex: 1, pointIndex: 3, done: false };
+    expect([0, 1, 2].map((i) => strokeRole(i, st))).toEqual(['done', 'current', 'future']);
+  });
+
+  it('everything is done once the item is finished', () => {
+    const st = { strokeIndex: 3, pointIndex: 0, done: true };
+    expect([0, 1, 2].map((i) => strokeRole(i, st))).toEqual(['done', 'done', 'done']);
   });
 });

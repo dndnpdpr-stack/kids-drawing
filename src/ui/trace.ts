@@ -4,7 +4,22 @@ import { go, type Route } from '../router';
 import { celebrate } from './celebrate';
 import { button, el, say, topBar, type Cleanup, type ScreenDeps } from './dom';
 
-const COLORS = { shadow: '#eef0f7', guide: '#c9cee3', ink: '#ff8fab', dot: '#c3c8dc', next: '#ffb703' };
+const COLORS = {
+  shadow: '#eef0f7',
+  guide: '#8f96b8',
+  guideLater: '#dde1ee',
+  ink: '#ff8fab',
+  dot: '#c3c8dc',
+  next: '#ffb703',
+};
+
+export type StrokeRole = 'done' | 'current' | 'future';
+
+/** 획 i가 다 그린 획인지, 지금 그릴 획인지, 아직 남은 획인지 */
+export function strokeRole(i: number, state: TraceState): StrokeRole {
+  if (state.done || i < state.strokeIndex) return 'done';
+  return i === state.strokeIndex ? 'current' : 'future';
+}
 
 /** 따라 그리기 한 항목. 다 그리면 ▶️(다음)과, 색칠 그림이 있으면 🎨(바로 칠하기)를 보여 준다. */
 export function render(root: HTMLElement, route: Route, deps: ScreenDeps): Cleanup {
@@ -75,14 +90,18 @@ export function render(root: HTMLElement, route: Route, deps: ScreenDeps): Clean
     c.clearRect(0, 0, side, side);
     c.lineCap = 'round';
     c.lineJoin = 'round';
-    // 굵은 연한 길 + 점선 안내
+    // 굵은 연한 길 + 점선 안내. 여러 획일 때 지금 그릴 획만 진하게, 남은 획은 흐리게.
     c.strokeStyle = COLORS.shadow;
     c.lineWidth = side * 0.09;
     strokes.forEach((s) => polyline(c, s.points));
-    c.strokeStyle = COLORS.guide;
     c.lineWidth = side * 0.02;
     c.setLineDash([side * 0.03, side * 0.03]);
-    strokes.forEach((s) => polyline(c, s.points));
+    strokes.forEach((s, i) => {
+      const role = strokeRole(i, state);
+      if (role === 'done') return;
+      c.strokeStyle = role === 'current' ? COLORS.guide : COLORS.guideLater;
+      polyline(c, s.points);
+    });
     c.setLineDash([]);
     // 그린 부분
     c.strokeStyle = COLORS.ink;

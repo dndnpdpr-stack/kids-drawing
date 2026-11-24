@@ -363,15 +363,16 @@ button,
   grid-template-columns: repeat(auto-fill, minmax(max(120px, 22vmin), 1fr));
   gap: max(10px, 2.5vmin);
   align-content: start;
+  grid-auto-rows: max-content;
   padding: 1vmin;
 }
 .pick-card {
-  aspect-ratio: 1;
+  /* 높이는 정사각형 썸네일이 정한다 (aspect-ratio를 카드에 걸면 전역 min-height 때문에 줄이 눌려 겹친다) */
   padding: max(6px, 1.2vmin);
   background: var(--card);
   border-radius: var(--radius);
 }
-.pick-card .thumb { width: 100%; height: 100%; border-radius: calc(var(--radius) * 0.6); display: block; }
+.pick-card .thumb { width: 100%; height: auto; aspect-ratio: 1; border-radius: calc(var(--radius) * 0.6); display: block; }
 
 /* ---------- 색칠 화면 ---------- */
 .undo-btn { background: var(--lilac); }

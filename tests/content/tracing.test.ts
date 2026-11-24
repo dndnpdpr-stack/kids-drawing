@@ -3,17 +3,22 @@ import { getPicture } from '../../src/content/pictures';
 import { getTraceItem, nextTraceItem, TRACE_ITEMS } from '../../src/content/tracing';
 
 describe('tracing items', () => {
-  it('has the thirteen planned items in order', () => {
+  it('has the twenty-five planned items in order', () => {
     expect(TRACE_ITEMS.map((t) => `${t.group}:${t.id}`)).toEqual([
-      'line:hline', 'line:vline', 'line:zigzag', 'line:wave',
-      'shape:circle', 'shape:triangle', 'shape:square', 'shape:heart', 'shape:star',
-      'picture:fish', 'picture:apple', 'picture:house', 'picture:balloon',
+      'line:hline', 'line:vline', 'line:zigzag', 'line:wave', 'line:stairs', 'line:loops',
+      'shape:circle', 'shape:triangle', 'shape:square', 'shape:heart', 'shape:star', 'shape:diamond', 'shape:moon',
+      'picture:fish', 'picture:apple', 'picture:house', 'picture:balloon', 'picture:icecream', 'picture:mushroom',
+      'multi:face', 'multi:sunM', 'multi:flowerM', 'multi:houseM', 'multi:snowmanM', 'multi:treeM',
     ]);
   });
 
-  it('links exactly the six shapes that have coloring pictures', () => {
-    const linked = TRACE_ITEMS.filter((t) => t.picture).map((t) => t.id);
-    expect(linked.sort()).toEqual(['apple', 'balloon', 'fish', 'heart', 'house', 'star']);
+  it('links every item that has a coloring picture', () => {
+    const linked = Object.fromEntries(TRACE_ITEMS.filter((t) => t.picture).map((t) => [t.id, t.picture]));
+    expect(linked).toEqual({
+      heart: 'heart', star: 'star', fish: 'fish', apple: 'apple', house: 'house', balloon: 'balloon',
+      icecream: 'icecream', mushroom: 'mushroom',
+      sunM: 'sun', flowerM: 'flower', houseM: 'house', snowmanM: 'snowman', treeM: 'tree',
+    });
     for (const t of TRACE_ITEMS) if (t.picture) expect(getPicture(t.picture), t.id).toBeDefined();
   });
 
@@ -38,7 +43,7 @@ describe('tracing items', () => {
   }
 
   it('closed shapes start both strokes at the same point', () => {
-    for (const id of ['circle', 'heart', 'star', 'apple', 'balloon']) {
+    for (const id of ['circle', 'heart', 'star', 'apple', 'balloon', 'diamond', 'moon', 'icecream', 'mushroom']) {
       const [a, b] = getTraceItem(id)!.strokes;
       expect(a.points[0], id).toEqual(b.points[0]);
     }
@@ -51,7 +56,20 @@ describe('tracing items', () => {
 
   it('nextTraceItem wraps around', () => {
     expect(nextTraceItem('hline').id).toBe('vline');
-    expect(nextTraceItem('balloon').id).toBe('hline');
+    expect(nextTraceItem('treeM').id).toBe('hline');
+  });
+
+  it('multi-stroke pictures have at least three strokes, none too short to trace', () => {
+    for (const t of TRACE_ITEMS.filter((x) => x.group === 'multi')) {
+      expect(t.strokes.length, t.id).toBeGreaterThanOrEqual(3);
+      for (const s of t.strokes) {
+        const a = s.points[0];
+        const b = s.points[s.points.length - 1];
+        let len = 0;
+        for (let i = 1; i < s.points.length; i++) len += Math.hypot(s.points[i].x - s.points[i - 1].x, s.points[i].y - s.points[i - 1].y);
+        expect(len, `${t.id} ${a.x},${a.y}->${b.x},${b.y}`).toBeGreaterThanOrEqual(0.06);
+      }
+    }
   });
 
   it('getTraceItem unknown is undefined', () => {

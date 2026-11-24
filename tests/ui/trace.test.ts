@@ -76,8 +76,23 @@ describe('trace screen', () => {
     open('balloon');
     traceAll('balloon');
     q('next')!.click();
+    expect(location.hash).toBe('#/trace/icecream');
+  });
+
+  it('the last item wraps to the first', () => {
+    open('treeM');
+    traceAll('treeM');
+    q('next')!.click();
     expect(location.hash).toBe('#/trace/hline');
   });
+
+  for (const id of ['face', 'sunM', 'flowerM', 'houseM', 'snowmanM', 'treeM']) {
+    it(`multi-stroke ${id} can be finished`, () => {
+      open(id);
+      traceAll(id);
+      expect(q('next')).not.toBeNull();
+    });
+  }
 
   it('unknown item goes to the picker', () => {
     open('nope');
@@ -86,10 +101,10 @@ describe('trace screen', () => {
 });
 
 describe('trace picker', () => {
-  it('lists the three groups and all items', () => {
+  it('lists the four groups and all items', () => {
     cleanup = renderPick(root, { name: 'tracePick' }, makeDeps());
-    expect(root.querySelectorAll('.trace-row')).toHaveLength(3);
-    expect(root.querySelectorAll('[data-testid^=trace-]')).toHaveLength(13);
+    expect(root.querySelectorAll('.trace-row')).toHaveLength(4);
+    expect(root.querySelectorAll('[data-testid^=trace-]')).toHaveLength(25);
     q('trace-star')!.click();
     expect(location.hash).toBe('#/trace/star');
   });

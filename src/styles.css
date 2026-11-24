@@ -520,6 +520,25 @@ button,
   gap: max(16px, 4vmin);
 }
 .trace-actions .icon-btn { width: max(var(--touch), 16vmin); height: max(var(--touch), 16vmin); font-size: max(2rem, 8vmin); }
+.trace-palette {
+  flex: none;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: max(6px, 1.4vmin);
+  padding: max(6px, 1.4vmin) 0;
+}
+.trace-palette .swatch { width: max(var(--touch), 9vmin); height: max(var(--touch), 9vmin); }
+.trace-body { flex: 1; min-height: 0; display: flex; flex-direction: column; }
+@media (orientation: landscape) {
+  /* 가로 화면: 색 줄을 오른쪽 세로 격자로 (캔버스가 작아지지 않게) */
+  .trace-body { flex-direction: row; gap: max(8px, 2vmin); }
+  .trace-palette { display: grid; grid-template-columns: repeat(3, auto); align-content: center; padding: 0; }
+  .trace-palette .swatch {
+    width: max(var(--touch), min(10vmin, calc((100dvh - 150px) / 3.4)));
+    height: max(var(--touch), min(10vmin, calc((100dvh - 150px) / 3.4)));
+  }
+}
 .next-btn { background: var(--numbers); }
 .to-color-btn { background: var(--pink); }
 .trace-rows {

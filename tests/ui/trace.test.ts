@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { getTraceItem } from '../../src/content/tracing';
-import { render, strokeRole } from '../../src/ui/trace';
+import { lockInks, render, strokeRole, TRACE_INKS } from '../../src/ui/trace';
 import { render as renderPick } from '../../src/ui/tracePick';
 import { makeDeps, ptr } from '../helpers';
 
@@ -119,5 +119,32 @@ describe('stroke roles', () => {
   it('everything is done once the item is finished', () => {
     const st = { strokeIndex: 3, pointIndex: 0, done: true };
     expect([0, 1, 2].map((i) => strokeRole(i, st))).toEqual(['done', 'done', 'done']);
+  });
+});
+
+describe('trace inks', () => {
+  it('offers every palette color except white', () => {
+    expect(TRACE_INKS).toHaveLength(9);
+    expect(TRACE_INKS.map((c) => c.id)).not.toContain('white');
+  });
+
+  it('locks the color of each finished stroke only once', () => {
+    expect(lockInks([], 1, 'R')).toEqual(['R']);
+    expect(lockInks(['R'], 2, 'B')).toEqual(['R', 'B']);
+    expect(lockInks(['R'], 1, 'B')).toEqual(['R']);
+  });
+
+  it('starts pink, switches on tap, and keeps the choice for the next item', () => {
+    open('hline');
+    const selected = () => [...root.querySelectorAll('.swatch.selected')].map((b) => b.getAttribute('data-testid'));
+    expect(root.querySelectorAll('[data-testid^=ink-]')).toHaveLength(9);
+    expect(selected()).toEqual(['ink-pink']);
+    q('ink-blue')!.click();
+    expect(selected()).toEqual(['ink-blue']);
+    cleanup();
+    root.replaceChildren();
+    open('vline');
+    expect(selected()).toEqual(['ink-blue']);
+    q('ink-pink')!.click(); // 다른 테스트를 위해 되돌림
   });
 });

@@ -1,4 +1,5 @@
 import { getTraceItem, nextTraceItem } from '../content/tracing';
+import { PALETTE, type PaletteColor } from '../core/palette';
 import { advanceTrace, endStroke, newTrace, type Pt, type TraceState } from '../core/trace';
 import { go, type Route } from '../router';
 import { celebrate } from './celebrate';
@@ -8,10 +9,22 @@ const COLORS = {
   shadow: '#eef0f7',
   guide: '#8f96b8',
   guideLater: '#dde1ee',
-  ink: '#ff8fab',
   dot: '#c3c8dc',
   next: '#ffb703',
 };
+
+/** 따라 그리기 색: 색칠 팔레트에서 흰색만 뺀다 (흰 바탕에서 안 보이므로) */
+export const TRACE_INKS: readonly PaletteColor[] = PALETTE.filter((c) => c.id !== 'white');
+
+/** 고른 색은 다음 항목으로 넘어가도 유지 (앱을 다시 열면 분홍) */
+let ink = PALETTE.find((c) => c.id === 'pink')!.hex;
+
+/** 다 그린 획(doneCount개)의 색을 고정한다. 이미 정해진 획 색은 바꾸지 않는다. */
+export function lockInks(inks: string[], doneCount: number, current: string): string[] {
+  const out = inks.slice();
+  for (let i = 0; i < doneCount; i++) if (out[i] === undefined) out[i] = current;
+  return out;
+}
 
 export type StrokeRole = 'done' | 'current' | 'future';
 
@@ -34,7 +47,20 @@ export function render(root: HTMLElement, route: Route, deps: ScreenDeps): Clean
   const canvas = el('canvas', 'trace-canvas');
   const area = el('div', 'trace-area', [canvas]);
   const actions = el('div', 'trace-actions');
-  const screen = el('section', 'screen trace', [topBar({ name: 'tracePick' }), area, actions]);
+  const swatches = TRACE_INKS.map((c) => {
+    const b = button('', () => selectInk(c.hex), 'swatch', {
+      'data-testid': `ink-${c.id}`,
+      'aria-label': c.name,
+    });
+    b.style.setProperty('--swatch', c.hex);
+    return b;
+  });
+  const palette = el('div', 'trace-palette', swatches);
+  const screen = el('section', 'screen trace', [
+    topBar({ name: 'tracePick' }),
+    el('div', 'trace-body', [area, palette]),
+    actions,
+  ]);
   root.append(screen);
 
   let ctx: CanvasRenderingContext2D | null = null;
@@ -49,6 +75,17 @@ export function render(root: HTMLElement, route: Route, deps: ScreenDeps): Clean
   let side = 1;
   let frame = 0;
   let stopCelebrate: (() => void) | null = null;
+  let inks: string[] = []; // 다 그린 획마다 그때 고른 색
+
+  function selectInk(hex: string) {
+    ink = hex;
+    swatches.forEach((b, i) => b.classList.toggle('selected', TRACE_INKS[i].hex === hex));
+  }
+  selectInk(ink);
+
+  function lock() {
+    inks = lockInks(inks, state.done ? strokes.length : state.strokeIndex, ink);
+  }
 
   function resize() {
     const r = area.getBoundingClientRect();
@@ -104,11 +141,15 @@ export function render(root: HTMLElement, route: Route, deps: ScreenDeps): Clean
     });
     c.setLineDash([]);
     // 그린 부분
-    c.strokeStyle = COLORS.ink;
     c.lineWidth = side * 0.06;
-    strokes.slice(0, state.strokeIndex).forEach((s) => polyline(c, s.points));
+    strokes.forEach((s, i) => {
+      if (inks[i] === undefined) return;
+      c.strokeStyle = inks[i];
+      polyline(c, s.points);
+    });
     const cur = strokes[state.strokeIndex];
     if (cur && !state.done) {
+      c.strokeStyle = ink;
       const reached = cur.points.slice(0, state.pointIndex);
       polyline(c, finger && reached.length > 0 ? [...reached, finger] : reached);
       const next = cur.points[state.pointIndex];
@@ -134,6 +175,7 @@ export function render(root: HTMLElement, route: Route, deps: ScreenDeps): Clean
       finger = toPt(s);
       state = advanceTrace(state, strokes, finger);
     }
+    lock();
     if (state.done) complete();
   }
 
@@ -180,6 +222,7 @@ export function render(root: HTMLElement, route: Route, deps: ScreenDeps): Clean
     active = null;
     finger = null;
     state = endStroke(state, strokes);
+    lock();
   };
 
   canvas.addEventListener('pointerdown', onDown);

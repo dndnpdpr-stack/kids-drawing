@@ -257,9 +257,9 @@ describe('finishing safely', () => {
 });
 
 describe('color picker', () => {
-  it('lists all twelve pictures and opens one', () => {
+  it('lists all twenty-four pictures and opens one', () => {
     cleanup = renderPick(root, { name: 'colorPick' }, makeDeps({ db }));
-    expect(root.querySelectorAll('[data-testid^=pick-]')).toHaveLength(12);
+    expect(root.querySelectorAll('[data-testid^=pick-]')).toHaveLength(24);
     q('pick-fish').click();
     expect(location.hash).toBe('#/color/fish');
   });

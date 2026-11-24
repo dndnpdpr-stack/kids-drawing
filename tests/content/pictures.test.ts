@@ -17,10 +17,11 @@ describe('pictures', () => {
     }
   });
 
-  it('has twelve pictures with the planned levels', () => {
-    expect(PICTURES).toHaveLength(12);
-    for (const id of ['flower', 'car', 'cat']) expect(getPicture(id)?.level, id).toBe(2);
-    for (const id of ['butterfly', 'dino', 'rocket']) expect(getPicture(id)?.level, id).toBe(3);
+  it('has twenty-four pictures with the planned levels', () => {
+    expect(PICTURES).toHaveLength(24);
+    for (const id of ['sun', 'icecream', 'umbrella', 'mushroom']) expect(getPicture(id)?.level, id).toBe(1);
+    for (const id of ['flower', 'car', 'cat', 'boat', 'tree', 'snowman', 'turtle']) expect(getPicture(id)?.level, id).toBe(2);
+    for (const id of ['butterfly', 'dino', 'rocket', 'train', 'castle', 'rabbit', 'owl']) expect(getPicture(id)?.level, id).toBe(3);
   });
 
   it('is sorted easiest first', () => {

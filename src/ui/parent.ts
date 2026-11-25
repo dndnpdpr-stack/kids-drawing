@@ -1,4 +1,5 @@
 import { getPicture } from '../content/pictures';
+import { canInstall, onInstallChange, promptInstall } from '../core/install';
 import { NAME_MAX, normalizeName } from '../core/profile';
 import type { GalleryItem } from '../core/db';
 import type { Route } from '../router';
@@ -124,6 +125,16 @@ export function render(root: HTMLElement, _route: Route, deps: ScreenDeps): Clea
     'reset',
   );
 
+  // 홈 화면에 추가 (크롬이 허락할 때만 보임)
+  const installBtn = button('📲 홈 화면에 추가', () => void promptInstall(), 'install-btn', {
+    'data-testid': 'install',
+  });
+  const syncInstall = () => {
+    installBtn.hidden = !canInstall();
+  };
+  syncInstall();
+  const offInstall = onInstallChange(syncInstall);
+
   root.append(
     el('section', 'screen parent', [
       topBar(null, el('label', 'parent-volume', [el('span', 'parent-key', ['🔊 볼륨']), slider])),
@@ -132,6 +143,7 @@ export function render(root: HTMLElement, _route: Route, deps: ScreenDeps): Clea
         count,
         list,
         reset.b,
+        installBtn,
         el('p', 'parent-note', ['그림과 기록은 이 기기에만 저장돼요. 이름과 볼륨은 지워지지 않아요.']),
       ]),
     ]),
@@ -140,6 +152,7 @@ export function render(root: HTMLElement, _route: Route, deps: ScreenDeps): Clea
 
   return () => {
     alive = false;
+    offInstall();
     reset.clear();
     clears.forEach((c) => c());
     urls.forEach((u) => URL.revokeObjectURL(u));

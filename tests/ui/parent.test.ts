@@ -4,6 +4,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { fill, newColoring } from '../../src/core/coloring';
 import { openDrawDb, type DrawDb } from '../../src/core/db';
 import type { Settings } from '../../src/core/settings';
+import { captureInstallPrompt } from '../../src/core/install';
 import { render } from '../../src/ui/parent';
 import { makeDeps } from '../helpers';
 
@@ -87,5 +88,22 @@ describe('parent menu', () => {
     });
     expect(saveName).not.toHaveBeenCalled();
     expect(saveSettings).not.toHaveBeenCalled();
+  });
+});
+
+describe('add to home screen', () => {
+  captureInstallPrompt(window);
+  afterEach(() => window.dispatchEvent(new Event('appinstalled')));
+
+  it('the button appears only when the browser offers install, and opens its prompt', () => {
+    cleanup = render(root, { name: 'parent' }, makeDeps({ db }));
+    expect(q('install')!.hidden).toBe(true);
+    const ev = new Event('beforeinstallprompt', { cancelable: true }) as Event & { prompt: () => Promise<void> };
+    ev.prompt = vi.fn(() => Promise.resolve());
+    window.dispatchEvent(ev);
+    expect(q('install')!.hidden).toBe(false);
+    q('install')!.click();
+    expect(ev.prompt).toHaveBeenCalledTimes(1);
+    expect(q('install')!.hidden).toBe(true);
   });
 });

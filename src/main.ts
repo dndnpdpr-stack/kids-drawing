@@ -5,6 +5,8 @@ import '@fontsource/noto-sans-kr/700.css';
 import './styles.css';
 import { Capacitor } from '@capacitor/core';
 import { speak, stopSpeaking } from './core/audio';
+import { installAutoFullscreen } from './core/fullscreen';
+import { captureInstallPrompt } from './core/install';
 import { installBackButton } from './core/backButton';
 import { lazyDrawDb, openDrawDb } from './core/db';
 import { isTestMode } from './core/devFlags';
@@ -66,6 +68,9 @@ function boot(root: HTMLElement): void {
   let cleanup: Cleanup = () => {};
   let current: Route = { name: 'home' };
   installBackButton(() => current);
+  captureInstallPrompt(window);
+  // 폰 브라우저: 처음 누를 때 전체화면 (부모 메뉴에서는 다시 켜지 않음)
+  installAutoFullscreen(document, { isNative: Capacitor.isNativePlatform(), skip: () => current.name === 'parent' });
   startRouter((route) => {
     cleanup();
     stopSpeaking();

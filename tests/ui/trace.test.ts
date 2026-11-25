@@ -87,13 +87,13 @@ describe('trace screen', () => {
   });
 
   it('the last item wraps to the first', () => {
-    open('owlM');
-    traceAll('owlM');
+    open('cupcakeM');
+    traceAll('cupcakeM');
     q('next')!.click();
     expect(location.hash).toBe('#/trace/fish');
   });
 
-  for (const id of ['face', 'sunM', 'flowerM', 'houseM', 'snowmanM', 'treeM', 'boatM', 'carM', 'butterflyM', 'rocketM', 'rabbitM', 'owlM']) {
+  for (const id of ['face', 'sunM', 'flowerM', 'houseM', 'snowmanM', 'treeM', 'boatM', 'carM', 'butterflyM', 'rocketM', 'rabbitM', 'owlM', 'castleM', 'dinoM', 'trainM', 'pigM', 'bearM', 'caterpillarM', 'cupcakeM']) {
     it(`multi-stroke ${id} can be finished`, () => {
       open(id);
       traceAll(id);
@@ -111,7 +111,7 @@ describe('trace picker', () => {
   it('lists the two picture rows and all items', () => {
     cleanup = renderPick(root, { name: 'tracePick' }, makeDeps());
     expect(root.querySelectorAll('.trace-row')).toHaveLength(2);
-    expect(root.querySelectorAll('[data-testid^=trace-]')).toHaveLength(23);
+    expect(root.querySelectorAll('[data-testid^=trace-]')).toHaveLength(36);
     q('trace-star')!.click();
     expect(location.hash).toBe('#/trace/star');
   });

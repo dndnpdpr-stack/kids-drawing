@@ -5,7 +5,15 @@ export type Pt = { x: number; y: number };
 
 export type Op =
   | { kind: 'fill'; region: string; color: string }
-  | { kind: 'brush'; region: string; color: string; points: Pt[] };
+  /** 예전 붓: 시작한 칸 안에만 그려진다. 새로 만들지는 않고, 저장된 그림을 그대로 보여 주려고 남겨 둔다. */
+  | { kind: 'brush'; region: string; color: string; points: Pt[] }
+  /** 펜: 칸에 상관없이 그림 위 어디든. 그림의 검은 선은 그 위에 보인다. */
+  | { kind: 'pen'; color: string; points: Pt[] };
+
+export interface PenStroke {
+  color: string;
+  points: Pt[];
+}
 
 /** 색칠 상태 = 지금까지 한 동작 목록. 되돌리기는 마지막 동작을 빼는 것. */
 export interface ColoringState {
@@ -35,6 +43,16 @@ export function addBrush(s: ColoringState, region: string, color: string, points
   return { ...s, ops: [...s.ops, { kind: 'brush', region, color, points }] };
 }
 
+export function addPen(s: ColoringState, color: string, points: Pt[]): ColoringState {
+  if (points.length === 0) return s;
+  return { ...s, ops: [...s.ops, { kind: 'pen', color, points }] };
+}
+
+/** 펜 획들, 그린 순서대로 */
+export function pensOf(s: ColoringState): PenStroke[] {
+  return s.ops.flatMap((op) => (op.kind === 'pen' ? [{ color: op.color, points: op.points }] : []));
+}
+
 export function undo(s: ColoringState): ColoringState {
   return s.ops.length === 0 ? s : { ...s, ops: s.ops.slice(0, -1) };
 }
@@ -46,6 +64,7 @@ export function canUndo(s: ColoringState): boolean {
 export function viewOf(s: ColoringState): Record<string, RegionView> {
   const out: Record<string, RegionView> = {};
   for (const op of s.ops) {
+    if (op.kind === 'pen') continue;
     const v = (out[op.region] ??= { fill: null, brushes: [] });
     if (op.kind === 'fill') {
       v.fill = op.color;
@@ -83,10 +102,13 @@ const isNum = (v: unknown): v is number => typeof v === 'number' && Number.isFin
 function isOp(v: unknown): v is Op {
   if (typeof v !== 'object' || v === null) return false;
   const o = v as Record<string, unknown>;
-  if (!isStr(o.region) || !isStr(o.color)) return false;
+  if (!isStr(o.color)) return false;
+  const okPoints = () =>
+    Array.isArray(o.points) && o.points.every((p) => typeof p === 'object' && p !== null && isNum(p.x) && isNum(p.y));
+  if (o.kind === 'pen') return okPoints();
+  if (!isStr(o.region)) return false;
   if (o.kind === 'fill') return true;
-  if (o.kind !== 'brush' || !Array.isArray(o.points)) return false;
-  return o.points.every((p) => typeof p === 'object' && p !== null && isNum(p.x) && isNum(p.y));
+  return o.kind === 'brush' && okPoints();
 }
 
 export function isColoringState(v: unknown): v is ColoringState {

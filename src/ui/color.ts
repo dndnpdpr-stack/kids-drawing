@@ -1,10 +1,11 @@
 import { getPicture } from '../content/pictures';
 import {
-  addBrush,
+  addPen,
   canUndo,
   fill,
   isComplete,
   newColoring,
+  pensOf,
   simplify,
   undo,
   viewOf,
@@ -12,7 +13,7 @@ import {
   type Pt,
 } from '../core/coloring';
 import { PALETTE } from '../core/palette';
-import { drawBrushSegment, drawColoring, exportPng, makeHitTest, type HitTest } from '../core/paint';
+import { drawColoring, drawPenSegment, exportPng, makeHitTest, type HitTest } from '../core/paint';
 import { go, type Route } from '../router';
 import { CELEBRATE_BIG_MS, celebrate } from './celebrate';
 import { button, el, say, timers, topBar, type Cleanup, type ScreenDeps } from './dom';
@@ -88,7 +89,7 @@ export function render(root: HTMLElement, route: Route, deps: ScreenDeps, opts: 
   let side = 1;
 
   function redraw() {
-    if (ctx) drawColoring(ctx, picture!, viewOf(state), side);
+    if (ctx) drawColoring(ctx, picture!, viewOf(state), side, pensOf(state));
   }
 
   function resize() {
@@ -116,7 +117,7 @@ export function render(root: HTMLElement, route: Route, deps: ScreenDeps, opts: 
   function setMode(m: Mode) {
     mode = m;
     modeBtn.textContent = m === 'fill' ? '👆' : '🖌️';
-    modeBtn.setAttribute('aria-label', m === 'fill' ? '눌러서 채우기' : '손가락 붓');
+    modeBtn.setAttribute('aria-label', m === 'fill' ? '눌러서 채우기' : '펜');
     modeBtn.classList.toggle('brush', m === 'brush');
   }
 
@@ -151,7 +152,7 @@ export function render(root: HTMLElement, route: Route, deps: ScreenDeps, opts: 
 
   // ---------- 손가락 ----------
   let active: number | null = null;
-  let brushRegion: string | null = null;
+  let drawing = false;
   let points: Pt[] = [];
   /** 채우기: 손가락을 댄 곳 (뗀 곳이 아니라). 손가락이 미끄러져도 옆 칸이 칠해지지 않게. */
   let downPt: Pt | null = null;
@@ -176,17 +177,22 @@ export function render(root: HTMLElement, route: Route, deps: ScreenDeps, opts: 
       downPt = p;
       return;
     }
-    brushRegion = hit(p);
+    drawing = true;
     points = [p];
-    if (brushRegion && ctx) drawBrushSegment(ctx, picture, viewOf(state), brushRegion, color, p, p, side);
+    drawLive(p, p);
   };
 
+  /** 그리는 중인 펜 한 마디 (지금 획까지 포함해서) */
+  function drawLive(from: Pt, to: Pt) {
+    if (ctx) drawPenSegment(ctx, picture!, viewOf(state), [...pensOf(state), { color, points }], from, to, side);
+  }
+
   const onMove = (e: PointerEvent) => {
-    if (e.pointerId !== active || mode !== 'brush' || !brushRegion) return;
+    if (e.pointerId !== active || mode !== 'brush' || !drawing) return;
     const p = toPic(e);
     const last = points[points.length - 1];
     points.push(p);
-    if (ctx) drawBrushSegment(ctx, picture, viewOf(state), brushRegion, color, last, p, side);
+    drawLive(last, p);
   };
 
   const onUp = (e: PointerEvent) => {
@@ -202,16 +208,15 @@ export function render(root: HTMLElement, route: Route, deps: ScreenDeps, opts: 
       }
       return;
     }
-    const region = brushRegion;
-    brushRegion = null;
-    if (region) commit(addBrush(state, region, color, simplify(points)));
+    if (drawing) commit(addPen(state, color, simplify(points)));
+    drawing = false;
     points = [];
   };
 
   const onCancel = (e: PointerEvent) => {
     if (e.pointerId !== active) return;
     active = null;
-    brushRegion = null;
+    drawing = false;
     downPt = null;
     points = [];
     redraw(); // 그리던 자국 지우기
@@ -257,7 +262,8 @@ export function render(root: HTMLElement, route: Route, deps: ScreenDeps, opts: 
 
   // ---------- 시작 ----------
   selectColor(color);
-  setMode('fill');
+  // 그림판(하얀 도화지)은 채울 칸이 없으니 펜으로 시작한다
+  setMode(picture.id === 'blank' ? 'brush' : 'fill');
   resize();
   refreshButtons();
   void say(deps, `${picture.name} 색칠하자!`);

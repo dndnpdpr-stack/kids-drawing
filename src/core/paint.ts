@@ -1,5 +1,5 @@
 import type { Picture } from '../content/pictures';
-import { viewOf, type ColoringState, type Pt, type RegionView } from './coloring';
+import { pensOf, viewOf, type ColoringState, type PenStroke, type Pt, type RegionView } from './coloring';
 
 /** 붓 굵기 (그림 좌표 0~100 기준 = 한 변의 4%) */
 export const BRUSH_WIDTH = 4;
@@ -123,17 +123,26 @@ function outlineStyle(ctx: CanvasRenderingContext2D): void {
 }
 
 /**
- * 칸 하나: 채우기(없으면 흰색) → 그 칸 모양으로 잘라 붓 자국 → 테두리 (배경 칸은 테두리 없음).
+ * 칸 하나: 채우기(없으면 흰색) → 그 칸 모양으로 잘라 붓 자국과 펜 → 테두리 (배경 칸은 테두리 없음).
+ * 펜은 모든 칸에서 그 칸 모양으로 잘라 그리므로, 합치면 그림 위 어디에나 보이고 검은 선은 펜 위에 남는다.
  * 칸마다 자기 차례에 테두리까지 그리므로 위에 겹친 칸이 아래 칸의 테두리도 가린다.
  * ctx는 0~100 좌표로 맞춰져 있어야 한다.
  */
-function drawRegion(ctx: CanvasRenderingContext2D, id: string, path: Path2D, v: RegionView | undefined): void {
+function drawRegion(
+  ctx: CanvasRenderingContext2D,
+  id: string,
+  path: Path2D,
+  v: RegionView | undefined,
+  pens: PenStroke[],
+): void {
   ctx.fillStyle = v?.fill ?? BLANK;
   ctx.fill(path);
-  if (v && v.brushes.length > 0) {
+  const brushes = v?.brushes ?? [];
+  if (brushes.length > 0 || pens.length > 0) {
     ctx.save();
     ctx.clip(path);
-    for (const b of v.brushes) strokePoints(ctx, b.color, b.points);
+    for (const b of brushes) strokePoints(ctx, b.color, b.points);
+    for (const p of pens) strokePoints(ctx, p.color, p.points);
     ctx.restore();
   }
   if (id === 'bg') return;
@@ -160,58 +169,58 @@ export function drawColoring(
   picture: Picture,
   view: Record<string, RegionView>,
   size: number,
+  pens: PenStroke[] = [],
 ): void {
   const paths = regionPaths(picture);
   ctx.save();
   ctx.scale(size / 100, size / 100);
   ctx.fillStyle = BLANK;
   ctx.fillRect(0, 0, 100, 100);
-  for (const r of picture.regions) drawRegion(ctx, r.id, paths.get(r.id)!, view[r.id]);
+  for (const r of picture.regions) drawRegion(ctx, r.id, paths.get(r.id)!, view[r.id], pens);
   drawExtraLines(ctx, picture);
   ctx.restore();
 }
 
 /**
- * 진행 중인 붓 한 마디를 그린다 (전체를 다시 그리지 않고).
- * 그 칸 모양으로 잘라 그린 뒤 그 칸 테두리를 다시 긋고, 위에 겹친 칸 중 이 마디와 닿을 수 있는 칸만
- * 다시 그려서 덮는다. 마지막으로 덧그림 선을 다시 긋는다.
+ * 진행 중인 펜 한 마디를 그린다 (전체를 다시 그리지 않고).
+ * 그 마디를 감싸는 작은 사각형만 잘라, 그 안에 닿을 수 있는 칸을 뒤에서 앞 순서로 다시 그린다.
+ * pens에는 지금 그리는 획(지금까지의 점)도 들어 있어야 한다.
  */
-export function drawBrushSegment(
+export function drawPenSegment(
   ctx: CanvasRenderingContext2D,
   picture: Picture,
   view: Record<string, RegionView>,
-  region: string,
-  color: string,
+  pens: PenStroke[],
   from: Pt,
   to: Pt,
   size: number,
 ): void {
   const paths = regionPaths(picture);
-  const path = paths.get(region);
-  if (!path) return;
-  ctx.save();
-  ctx.scale(size / 100, size / 100);
-  ctx.save();
-  ctx.clip(path);
-  strokePoints(ctx, color, from.x === to.x && from.y === to.y ? [from] : [from, to]);
-  ctx.restore();
-  if (region !== 'bg') {
-    outlineStyle(ctx);
-    ctx.stroke(path);
-  }
-  const pad = BRUSH_WIDTH / 2;
+  const boxes = regionBoxes(picture);
+  const pad = BRUSH_WIDTH / 2 + LINE_WIDTH;
   const seg: BBox = {
     x0: Math.min(from.x, to.x) - pad,
     y0: Math.min(from.y, to.y) - pad,
     x1: Math.max(from.x, to.x) + pad,
     y1: Math.max(from.y, to.y) + pad,
   };
-  const boxes = regionBoxes(picture);
-  const start = picture.regions.findIndex((r) => r.id === region);
-  for (const r of picture.regions.slice(start + 1)) {
+  ctx.save();
+  ctx.scale(size / 100, size / 100);
+  // 잘라 낼 사각형을 화면 픽셀 경계에 맞춘다 (어긋나면 가장자리에 옅은 줄이 남는다)
+  const k = ctx.getTransform?.().a || size / 100;
+  seg.x0 = Math.floor(seg.x0 * k) / k;
+  seg.y0 = Math.floor(seg.y0 * k) / k;
+  seg.x1 = Math.ceil(seg.x1 * k) / k;
+  seg.y1 = Math.ceil(seg.y1 * k) / k;
+  ctx.beginPath();
+  ctx.rect(seg.x0, seg.y0, seg.x1 - seg.x0, seg.y1 - seg.y0);
+  ctx.clip();
+  ctx.fillStyle = BLANK;
+  ctx.fillRect(seg.x0, seg.y0, seg.x1 - seg.x0, seg.y1 - seg.y0);
+  for (const r of picture.regions) {
     const b = boxes.get(r.id)!;
     if (b.x1 < seg.x0 || b.x0 > seg.x1 || b.y1 < seg.y0 || b.y0 > seg.y1) continue;
-    drawRegion(ctx, r.id, paths.get(r.id)!, view[r.id]);
+    drawRegion(ctx, r.id, paths.get(r.id)!, view[r.id], pens);
   }
   drawExtraLines(ctx, picture);
   ctx.restore();
@@ -246,7 +255,7 @@ function makeCanvas(size: number): HTMLCanvasElement {
 export function exportPng(picture: Picture, state: ColoringState, size = 1024): Promise<Blob> {
   const c = makeCanvas(size);
   const ctx = c.getContext('2d');
-  if (ctx) drawColoring(ctx, picture, viewOf(state), size);
+  if (ctx) drawColoring(ctx, picture, viewOf(state), size, pensOf(state));
   return new Promise((resolve) => {
     if (!ctx || typeof c.toBlob !== 'function') return resolve(new Blob([], { type: 'image/png' }));
     c.toBlob((b) => resolve(b ?? new Blob([], { type: 'image/png' })), 'image/png');
@@ -263,6 +272,6 @@ export function renderThumb(picture: Picture, state: ColoringState | null, size 
   } catch {
     ctx = null;
   }
-  if (ctx) drawColoring(ctx, picture, state ? viewOf(state) : {}, size);
+  if (ctx) drawColoring(ctx, picture, state ? viewOf(state) : {}, size, state ? pensOf(state) : []);
   return c;
 }

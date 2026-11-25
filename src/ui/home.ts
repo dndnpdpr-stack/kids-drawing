@@ -36,6 +36,7 @@ export function render(root: HTMLElement, _route: Route, deps: ScreenDeps): Clea
       el('div', 'mode-list', [
         card('🎨', '색칠하기', { name: 'colorPick' }, 'go-color', 'mode-color'),
         card('✏️', '따라 그리기', { name: 'tracePick' }, 'go-trace', 'mode-trace'),
+        card('📄', '그림판', { name: 'color', picture: 'blank' }, 'go-paper', 'mode-paper'),
       ]),
       card('📒', '그림첩', { name: 'gallery' }, 'go-gallery', 'mode-gallery'),
     ]),

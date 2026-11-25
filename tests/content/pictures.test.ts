@@ -6,6 +6,11 @@ const nums = (d: string) => (d.match(/-?\d+(\.\d+)?/g) ?? []).map(Number);
 const RANGE: Record<1 | 2 | 3, [number, number]> = { 1: [4, 6], 2: [7, 10], 3: [10, 15] };
 
 describe('pictures', () => {
+  it('blank paper is found by id but is not in the picker list', () => {
+    expect(getPicture('blank')?.regions.map((r) => r.id)).toEqual(['bg']);
+    expect(PICTURES.some((p) => p.id === 'blank')).toBe(false);
+  });
+
   it('have unique ids', () => {
     const ids = PICTURES.map((p) => p.id);
     expect(new Set(ids).size).toBe(ids.length);

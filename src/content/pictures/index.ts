@@ -1,5 +1,6 @@
 import { apple } from './apple';
 import { balloon } from './balloon';
+import { blank } from './blank';
 import { boat } from './boat';
 import { butterfly } from './butterfly';
 import { car } from './car';
@@ -34,5 +35,6 @@ export const PICTURES: Picture[] = [
 ];
 
 export function getPicture(id: string): Picture | undefined {
+  if (id === blank.id) return blank;
   return PICTURES.find((p) => p.id === id);
 }

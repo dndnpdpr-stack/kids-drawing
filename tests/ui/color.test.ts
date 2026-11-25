@@ -13,7 +13,7 @@ vi.mock('../../src/core/paint', async (orig) => {
   return {
     ...actual,
     drawColoring: vi.fn(),
-    drawBrushSegment: vi.fn(),
+    drawPenSegment: vi.fn(),
     exportPng: vi.fn(async () => new Blob(['png'], { type: 'image/png' })),
     renderThumb: vi.fn(() => document.createElement('canvas')),
   };
@@ -94,7 +94,7 @@ describe('color screen', () => {
     await vi.waitFor(async () => expect((await saved())?.ops).toEqual([{ kind: 'fill', region: 'body', color: RED }]));
   });
 
-  it('pointer leaving region keeps painting the start region', async () => {
+  it('the pen draws freely across regions and over the picture lines', async () => {
     open();
     q('mode').click();
     ptr(stage(), 'pointerdown', { x: 20, y: 20 });
@@ -105,18 +105,24 @@ describe('color screen', () => {
     await vi.waitFor(async () => {
       const ops = (await saved())?.ops ?? [];
       expect(ops).toHaveLength(1);
-      expect(ops[0]).toMatchObject({ kind: 'brush', region: 'body', color: RED });
+      expect(ops[0]).toMatchObject({ kind: 'pen', color: RED });
+      expect(ops[0]).not.toHaveProperty('region');
     });
-    expect(vi.mocked(paint.drawBrushSegment).mock.calls.every((c) => c[3] === 'body')).toBe(true);
+    expect(paint.drawPenSegment).toHaveBeenCalled();
   });
 
-  it('brush that starts outside every region paints nothing', async () => {
+  it('the pen also draws where there is no region', async () => {
     open();
     q('mode').click();
     ptr(stage(), 'pointerdown', { x: 20, y: 99 });
     ptr(stage(), 'pointermove', { x: 20, y: 20 });
     ptr(stage(), 'pointerup', { x: 20, y: 20 });
-    expect(q('undo').hasAttribute('disabled')).toBe(true);
+    expect(q('undo').hasAttribute('disabled')).toBe(false);
+  });
+
+  it('blank paper opens with the pen ready', () => {
+    open('blank');
+    expect(q('mode').classList.contains('brush')).toBe(true);
   });
 
   it('second pointer is ignored while drawing', async () => {
@@ -132,7 +138,8 @@ describe('color screen', () => {
     await vi.waitFor(async () => {
       const ops = (await saved())?.ops ?? [];
       expect(ops).toHaveLength(1);
-      expect(ops[0].region).toBe('body');
+      // 첫 손가락의 획만 남는다
+      expect(ops[0]).toMatchObject({ kind: 'pen', points: [{ x: 20, y: 20 }, { x: 30, y: 30 }] });
     });
   });
 

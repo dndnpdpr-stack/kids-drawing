@@ -327,11 +327,11 @@ button,
   flex: 1;
   min-height: 0;
   display: grid;
-  grid-template-columns: 3fr 2fr;
+  grid-template-columns: 4fr 3fr 3fr;
   gap: max(12px, 3vmin);
 }
 @media (orientation: portrait) {
-  .mode-list { grid-template-columns: 1fr; grid-template-rows: 3fr 2fr; }
+  .mode-list { grid-template-columns: 1fr; grid-template-rows: 4fr 3fr 3fr; }
 }
 .mode-card {
   display: flex;
@@ -346,6 +346,7 @@ button,
 .mode-label { font-size: max(1.6rem, 6vmin); }
 .mode-color { background: var(--pink); }
 .mode-trace { background: var(--abc); }
+.mode-paper { background: #ffffff; }
 .mode-gallery {
   flex: none;
   flex-direction: row;

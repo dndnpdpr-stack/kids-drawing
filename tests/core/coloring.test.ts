@@ -2,6 +2,8 @@ import { describe, expect, it } from 'vitest';
 import type { Picture } from '../../src/content/pictures';
 import {
   addBrush,
+  addPen,
+  pensOf,
   canUndo,
   fill,
   isColoringState,
@@ -66,7 +68,7 @@ describe('coloring state', () => {
 
   it('brush stroke stays in its starting region', () => {
     const s = addBrush(newColoring('t'), 'a', RED, [{ x: 10, y: 10 }, { x: 90, y: 90 }]);
-    expect(s.ops[0].region).toBe('a');
+    expect(s.ops[0]).toMatchObject({ region: 'a' });
     expect(Object.keys(viewOf(s))).toEqual(['a']);
   });
 
@@ -131,7 +133,40 @@ describe('isColoringState', () => {
     { pictureId: 't', ops: [{ kind: 'erase', region: 'a', color: RED }] },
     { pictureId: 't', ops: [{ kind: 'brush', region: 'a', color: RED, points: [{ x: 'a', y: 1 }] }] },
     { pictureId: 't', ops: [{ kind: 'fill', region: 1, color: RED }] },
+    { pictureId: 't', ops: [{ kind: 'pen', color: RED, points: [{ x: 1 }] }] },
   ])('rejects %j', (v) => {
     expect(isColoringState(v)).toBe(false);
+  });
+});
+
+describe('free pen', () => {
+  it('pen strokes belong to no region and keep their order', () => {
+    let s = addPen(newColoring('t'), RED, [{ x: 10, y: 10 }, { x: 90, y: 90 }]);
+    s = addPen(s, BLUE, [{ x: 5, y: 5 }]);
+    expect(pensOf(s)).toEqual([
+      { color: RED, points: [{ x: 10, y: 10 }, { x: 90, y: 90 }] },
+      { color: BLUE, points: [{ x: 5, y: 5 }] },
+    ]);
+    expect(viewOf(s)).toEqual({});
+  });
+
+  it('a later fill does not hide pen strokes', () => {
+    const s = fill(addPen(newColoring('t'), RED, [{ x: 1, y: 1 }]), 'a', BLUE);
+    expect(pensOf(s)).toHaveLength(1);
+  });
+
+  it('empty pen adds nothing; undo removes a pen stroke', () => {
+    const s = newColoring('t');
+    expect(addPen(s, RED, [])).toBe(s);
+    expect(pensOf(undo(addPen(s, RED, [{ x: 1, y: 1 }])))).toEqual([]);
+  });
+
+  it('pen strokes do not count toward completion', () => {
+    expect(isComplete(addPen(newColoring('t'), RED, [{ x: 1, y: 1 }]), pic)).toBe(false);
+  });
+
+  it('saved pen strokes are a valid state', () => {
+    const s = addPen(newColoring('t'), RED, [{ x: 1, y: 2 }]);
+    expect(isColoringState(JSON.parse(JSON.stringify(s)))).toBe(true);
   });
 });

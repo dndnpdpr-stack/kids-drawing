@@ -26,6 +26,7 @@ describe('home', () => {
   it.each([
     ['go-color', '#/color'],
     ['go-trace', '#/trace'],
+    ['go-paper', '#/color/blank'],
     ['go-gallery', '#/gallery'],
   ])('%s goes to %s', (id, hash) => {
     cleanup = render(root, { name: 'home' }, makeDeps());

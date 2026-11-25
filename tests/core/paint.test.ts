@@ -77,7 +77,7 @@ describe('drawColoring layering', () => {
       {
         get: (_t, k) => {
           if (k === 'fill') return (p?: FakePath2D) => p && log.push(`fill ${p.d}`);
-          if (k === 'stroke') return (p?: FakePath2D) => p && log.push(`stroke ${p.d}`);
+          if (k === 'stroke') return (p?: FakePath2D) => log.push(p ? `stroke ${p.d}` : 'pen');
           return () => {};
         },
         set: () => true,
@@ -93,6 +93,13 @@ describe('drawColoring layering', () => {
     const { ctx, log } = recorder();
     drawColoring(ctx, p, {}, 100);
     expect(log).toEqual([`fill ${BACK}`, `stroke ${BACK}`, `fill ${FRONT}`, `stroke ${FRONT}`, 'stroke M1 1L2 2']);
+  });
+
+  it('draws pen strokes inside every region, before that region outline', () => {
+    const p: Picture = { ...pic, regions: [{ id: 'bg', d: BACK }, { id: 'front', d: FRONT }], lines: ['M1 1L2 2'] };
+    const { ctx, log } = recorder();
+    drawColoring(ctx, p, {}, 100, [{ color: '#000', points: [{ x: 10, y: 10 }, { x: 50, y: 50 }] }]);
+    expect(log).toEqual([`fill ${BACK}`, 'pen', `fill ${FRONT}`, 'pen', `stroke ${FRONT}`, 'stroke M1 1L2 2']);
   });
 
   it('does not outline the bg region', () => {

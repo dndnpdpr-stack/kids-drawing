@@ -186,9 +186,10 @@ export function render(root: HTMLElement, route: Route, deps: ScreenDeps): Clean
     void say(deps, `잘 그렸어! ${item!.name}!`);
     const next = nextTraceItem(item!.id);
     const buttons = [
-      button('▶️', () => go({ name: 'trace', item: next.id }), 'icon-btn next-btn', {
+      // 다음 그림 자체를 보여 준다 (▶️는 동영상 재생 버튼처럼 보여서)
+      button(next.emoji, () => go({ name: 'trace', item: next.id }), 'icon-btn next-btn', {
         'data-testid': 'next',
-        'aria-label': '다음',
+        'aria-label': `다음: ${next.name}`,
       }),
     ];
     if (item!.picture) {

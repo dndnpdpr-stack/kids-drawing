@@ -4,8 +4,6 @@ import { button, el, say, topBar, type Cleanup, type ScreenDeps } from './dom';
 
 const SVG_NS = 'http://www.w3.org/2000/svg';
 const GROUPS: { id: TraceGroup; label: string }[] = [
-  { id: 'line', label: '〰️' },
-  { id: 'shape', label: '🔺' },
   { id: 'picture', label: '🖼️' },
   { id: 'multi', label: '✨' },
 ];
@@ -24,7 +22,7 @@ function preview(item: TraceItem): SVGSVGElement {
   return svg;
 }
 
-/** 따라 그리기 고르기: 선 / 도형 / 그림 / 여러 획 그림 네 줄 (잠금 없음) */
+/** 따라 그리기 고르기: 한 획 그림 / 여러 획 그림 두 줄 (잠금 없음) */
 export function render(root: HTMLElement, _route: Route, deps: ScreenDeps): Cleanup {
   const rows = GROUPS.map((g) =>
     el('div', 'trace-row', [

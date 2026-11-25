@@ -43,10 +43,17 @@ const open = (item: string) => {
 
 describe('trace screen', () => {
   it('shows next after tracing every stroke', () => {
-    open('hline');
+    open('fish');
     expect(q('next')).toBeNull();
-    traceAll('hline');
+    traceAll('fish');
     expect(q('next')).not.toBeNull();
+  });
+
+  it('the next button shows the next picture, not a play sign', () => {
+    open('fish');
+    traceAll('fish');
+    expect(q('next')!.textContent).toBe('🍎');
+    expect(q('next')!.getAttribute('aria-label')).toBe('다음: 사과');
   });
 
   it('lifting the finger mid-stroke does not finish', () => {
@@ -66,9 +73,9 @@ describe('trace screen', () => {
     expect(location.hash).toBe('#/color/heart');
   });
 
-  it('lines have no coloring button', () => {
-    open('hline');
-    traceAll('hline');
+  it('the smiling face has no coloring button', () => {
+    open('face');
+    traceAll('face');
     expect(q('to-color')).toBeNull();
   });
 
@@ -76,17 +83,17 @@ describe('trace screen', () => {
     open('balloon');
     traceAll('balloon');
     q('next')!.click();
-    expect(location.hash).toBe('#/trace/icecream');
+    expect(location.hash).toBe('#/trace/heart');
   });
 
   it('the last item wraps to the first', () => {
-    open('treeM');
-    traceAll('treeM');
+    open('owlM');
+    traceAll('owlM');
     q('next')!.click();
-    expect(location.hash).toBe('#/trace/hline');
+    expect(location.hash).toBe('#/trace/fish');
   });
 
-  for (const id of ['face', 'sunM', 'flowerM', 'houseM', 'snowmanM', 'treeM']) {
+  for (const id of ['face', 'sunM', 'flowerM', 'houseM', 'snowmanM', 'treeM', 'boatM', 'carM', 'butterflyM', 'rocketM', 'rabbitM', 'owlM']) {
     it(`multi-stroke ${id} can be finished`, () => {
       open(id);
       traceAll(id);
@@ -101,10 +108,10 @@ describe('trace screen', () => {
 });
 
 describe('trace picker', () => {
-  it('lists the four groups and all items', () => {
+  it('lists the two picture rows and all items', () => {
     cleanup = renderPick(root, { name: 'tracePick' }, makeDeps());
-    expect(root.querySelectorAll('.trace-row')).toHaveLength(4);
-    expect(root.querySelectorAll('[data-testid^=trace-]')).toHaveLength(25);
+    expect(root.querySelectorAll('.trace-row')).toHaveLength(2);
+    expect(root.querySelectorAll('[data-testid^=trace-]')).toHaveLength(23);
     q('trace-star')!.click();
     expect(location.hash).toBe('#/trace/star');
   });
@@ -135,7 +142,7 @@ describe('trace inks', () => {
   });
 
   it('starts pink, switches on tap, and keeps the choice for the next item', () => {
-    open('hline');
+    open('fish');
     const selected = () => [...root.querySelectorAll('.swatch.selected')].map((b) => b.getAttribute('data-testid'));
     expect(root.querySelectorAll('[data-testid^=ink-]')).toHaveLength(9);
     expect(selected()).toEqual(['ink-pink']);
@@ -143,7 +150,7 @@ describe('trace inks', () => {
     expect(selected()).toEqual(['ink-blue']);
     cleanup();
     root.replaceChildren();
-    open('vline');
+    open('apple');
     expect(selected()).toEqual(['ink-blue']);
     q('ink-pink')!.click(); // 다른 테스트를 위해 되돌림
   });

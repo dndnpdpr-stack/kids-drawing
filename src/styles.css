@@ -541,7 +541,12 @@ button,
     height: max(var(--touch), min(10vmin, calc((100dvh - 150px) / 3.4)));
   }
 }
-.next-btn { background: var(--numbers); }
+.next-btn { background: var(--numbers); animation: next-bounce 1.2s ease-in-out infinite; }
+@keyframes next-bounce {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-1.6vmin) scale(1.06); }
+}
+@media (prefers-reduced-motion: reduce) { .next-btn { animation: none; } }
 .to-color-btn { background: var(--pink); }
 .trace-rows {
   flex: 1;

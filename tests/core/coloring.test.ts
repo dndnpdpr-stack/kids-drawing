@@ -2,6 +2,8 @@ import { describe, expect, it } from 'vitest';
 import type { Picture } from '../../src/content/pictures';
 import {
   addBrush,
+  canClear,
+  clearAll,
   addPen,
   pensOf,
   canUndo,
@@ -167,6 +169,35 @@ describe('free pen', () => {
 
   it('saved pen strokes are a valid state', () => {
     const s = addPen(newColoring('t'), RED, [{ x: 1, y: 2 }]);
+    expect(isColoringState(JSON.parse(JSON.stringify(s)))).toBe(true);
+  });
+});
+
+describe('clear all', () => {
+  it('wipes pens and fills, and undo brings them back', () => {
+    const before = fill(addPen(newColoring('t'), RED, [{ x: 1, y: 1 }]), 'a', BLUE);
+    const cleared = clearAll(before);
+    expect(pensOf(cleared)).toEqual([]);
+    expect(viewOf(cleared)).toEqual({});
+    expect(canClear(cleared)).toBe(false);
+    expect(pensOf(undo(cleared))).toHaveLength(1);
+    expect(viewOf(undo(cleared)).a.fill).toBe(BLUE);
+  });
+
+  it('drawing after a clear shows only the new strokes', () => {
+    const s = addPen(clearAll(addPen(newColoring('t'), RED, [{ x: 1, y: 1 }])), BLUE, [{ x: 2, y: 2 }]);
+    expect(pensOf(s)).toEqual([{ color: BLUE, points: [{ x: 2, y: 2 }] }]);
+    expect(canClear(s)).toBe(true);
+  });
+
+  it('clearing an empty page does nothing', () => {
+    const s = newColoring('t');
+    expect(canClear(s)).toBe(false);
+    expect(clearAll(s)).toBe(s);
+  });
+
+  it('a saved clear is a valid state', () => {
+    const s = clearAll(addPen(newColoring('t'), RED, [{ x: 1, y: 1 }]));
     expect(isColoringState(JSON.parse(JSON.stringify(s)))).toBe(true);
   });
 });

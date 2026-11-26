@@ -120,6 +120,27 @@ describe('color screen', () => {
     expect(q('undo').hasAttribute('disabled')).toBe(false);
   });
 
+  it('only blank paper has a clear-all button', () => {
+    open();
+    expect(root.querySelector('[data-testid=clear]')).toBeNull();
+  });
+
+  it('clear-all wipes the paper and undo brings it back', () => {
+    open('blank');
+    expect(q('clear').hasAttribute('disabled')).toBe(true);
+    ptr(stage(), 'pointerdown', { x: 20, y: 20 });
+    ptr(stage(), 'pointermove', { x: 60, y: 60 });
+    ptr(stage(), 'pointerup', { x: 60, y: 60 });
+    expect(q('clear').hasAttribute('disabled')).toBe(false);
+    vi.mocked(paint.drawColoring).mockClear();
+    q('clear').click();
+    expect(q('clear').hasAttribute('disabled')).toBe(true);
+    expect(vi.mocked(paint.drawColoring).mock.calls.at(-1)?.[4]).toEqual([]);
+    q('undo').click();
+    expect(q('clear').hasAttribute('disabled')).toBe(false);
+    expect(vi.mocked(paint.drawColoring).mock.calls.at(-1)?.[4]).toHaveLength(1);
+  });
+
   it('blank paper opens with the pen ready', () => {
     open('blank');
     expect(q('mode').classList.contains('brush')).toBe(true);

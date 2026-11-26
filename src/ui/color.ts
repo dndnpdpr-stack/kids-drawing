@@ -1,7 +1,9 @@
 import { getPicture } from '../content/pictures';
 import {
   addPen,
+  canClear,
   canUndo,
+  clearAll,
   fill,
   isComplete,
   newColoring,
@@ -54,6 +56,10 @@ export function render(root: HTMLElement, route: Route, deps: ScreenDeps, opts: 
     'data-testid': 'undo',
     'aria-label': '되돌리기',
   });
+  const clearBtn = button('🗑️', () => commit(clearAll(state)), 'icon-btn clear-btn', {
+    'data-testid': 'clear',
+    'aria-label': '모두 지우기',
+  });
   const doneBtn = button('✅', () => void finish(), 'icon-btn done-btn', {
     'data-testid': 'done',
     'aria-label': '다 했어요',
@@ -73,7 +79,7 @@ export function render(root: HTMLElement, route: Route, deps: ScreenDeps, opts: 
   const palette = el('div', 'palette', [el('div', 'swatches', swatches), modeBtn]);
 
   const screen = el('section', 'screen color', [
-    topBar({ name: 'colorPick' }, undoBtn, doneBtn),
+    topBar({ name: 'colorPick' }, ...(picture.id === 'blank' ? [clearBtn] : []), undoBtn, doneBtn),
     el('div', 'color-body', [area, palette]),
   ]);
   root.append(screen);
@@ -106,6 +112,8 @@ export function render(root: HTMLElement, route: Route, deps: ScreenDeps, opts: 
   function refreshButtons() {
     if (canUndo(state)) undoBtn.removeAttribute('disabled');
     else undoBtn.setAttribute('disabled', '');
+    if (canClear(state)) clearBtn.removeAttribute('disabled');
+    else clearBtn.setAttribute('disabled', '');
     doneBtn.classList.toggle('ready', isComplete(state, picture!));
   }
 

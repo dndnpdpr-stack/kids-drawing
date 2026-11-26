@@ -380,6 +380,8 @@ button,
 /* ---------- 색칠 화면 ---------- */
 .undo-btn { background: var(--lilac); }
 .undo-btn[disabled] { opacity: 0.4; }
+.clear-btn { background: #ffe0e0; }
+.clear-btn[disabled] { opacity: 0.4; }
 .done-btn { background: var(--numbers); }
 .done-btn.ready { animation: ready-glow 1.2s ease-in-out infinite; }
 @keyframes ready-glow {
